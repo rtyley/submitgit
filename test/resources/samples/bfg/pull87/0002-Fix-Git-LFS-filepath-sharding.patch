@@ -1,0 +1,28 @@
+From 21c2ef53cd0809149cdc158a6e5335ab0af77e7f Mon Sep 17 00:00:00 2001
+From: Roberto Tyley <roberto.tyley@gmail.com>
+Date: Tue, 14 Apr 2015 10:00:05 +0100
+Subject: [PATCH 2/2] Fix Git-LFS filepath sharding
+
+See also:
+
+https://github.com/github/git-lfs/pull/212
+---
+ .../src/main/scala/com/madgag/git/bfg/cleaner/LfsBlobConverter.scala    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/bfg-library/src/main/scala/com/madgag/git/bfg/cleaner/LfsBlobConverter.scala b/bfg-library/src/main/scala/com/madgag/git/bfg/cleaner/LfsBlobConverter.scala
+index ce07008..e99496d 100644
+--- a/bfg-library/src/main/scala/com/madgag/git/bfg/cleaner/LfsBlobConverter.scala
++++ b/bfg-library/src/main/scala/com/madgag/git/bfg/cleaner/LfsBlobConverter.scala
+@@ -75,7 +75,7 @@ trait LfsBlobConverter extends TreeBlobModifier {
+ 
+     val shaHex = encodeHexString(digest.digest())
+ 
+-    val lfsPath = lfsObjectsDir / shaHex
++    val lfsPath = lfsObjectsDir / shaHex.substring(0, 2) / shaHex.substring(2, 4) / shaHex
+ 
+     val ensureLfsFile = Try(if (!lfsPath.exists) tmpFile moveTo lfsPath).recover {
+       case _ => lfsPath.size.contains(loader.getSize)
+-- 
+2.1.0
+

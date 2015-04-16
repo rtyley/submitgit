@@ -1,0 +1,28 @@
+@(content: Html)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>submitgit</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("lib/bootstrap/css/bootstrap.min.css")" />
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+</head>
+<body>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <a class="navbar-brand" href="#"><i>submitgit</i></a>
+    </nav>
+    <div class="body container">
+        @content
+    </div>
+    <footer class="gw-footer">
+        <div class="container">
+            <ul class="gw-footer-links">
+                <li><a href="https://github.com/guardian/prout#readme">prout</a> - is your pull request out?</li>
+                <li>&middot;</li>
+                <li><a href="https://rtyley.github.io/bfg-repo-cleaner/">The BFG</a> (remove unwanted Git data)</li>
+            </ul>
+            <p></p>
+        </div>
+    </footer>
+    <!-- @Application.gitCommitId -->
+</body>
+</html>
