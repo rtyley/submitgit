@@ -2,10 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET         /                      controllers.Application.index()
-GET         /oauth/callback        controllers.Application.oauthCallback(code: String)
-GET         /pulls                 controllers.Application.listPullRequests()
-POST        /pull/mail/:num        controllers.Application.mailPullRequest(num: Int)
+GET         /                                           controllers.Application.index()
+GET         /oauth/callback                             controllers.Application.oauthCallback(code: String)
+GET         /:repoOwner/:repoName/pulls                 controllers.Application.listPullRequests(repoOwner: String, repoName: String)
+GET         /:repoOwner/:repoName/pull/mail/:num        controllers.Application.reviewPullRequest(repoOwner: String, repoName: String, num: Int)
+POST        /:repoOwner/:repoName/pull/mail/:num        controllers.Application.mailPullRequest(repoOwner: String, repoName: String, num: Int)
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file          controllers.Assets.at(path="/public", file)
+GET         /assets/*file                               controllers.Assets.at(path="/public", file)

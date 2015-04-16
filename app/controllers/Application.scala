@@ -74,16 +74,25 @@ object Application extends Controller {
 
   val GitHubAuthenticatedAction = new AuthenticatedBuilder(userGitHubConnectionForSessionAccessToken, _ => redirectToGitHubForAuth)
 
-  def listPullRequests = GitHubAuthenticatedAction { implicit req =>
+  def listPullRequests(repoOwner: String, repoName: String) = GitHubAuthenticatedAction { implicit req =>
     val myself = req.user.getMyself
     val userPRs = req.user.getRepository(rootRepo).getPullRequests(GHIssueState.OPEN).filter(_.getUser.equals(myself))
 
     Ok(views.html.listPullRequests(userPRs, myself))
   }
 
-  def mailPullRequest(number: Int) = GitHubAuthenticatedAction.async {
+  def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction { implicit req =>
+    val pullRequest = req.user.getRepository(rootRepo).getPullRequest(number)
 
+    Ok("whatever")
+  }
 
+  def routeMailPullRequest(pr: GHPullRequest) = {
+    val repo = pr.getRepository
+    routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
+  }
+
+    def mailPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction.async {
     implicit req =>
 
       def emailFor(patch: Patch): Email = {
@@ -93,7 +102,7 @@ object Application extends Controller {
           subject = patch.subject,
           from = user.primaryEmail.getEmail, //commit.getAuthor.getEmail
           to = Seq(user.primaryEmail.getEmail),
-          cc = Seq("autoanswer@vger.kernel.org"),
+          // cc = Seq("autoanswer@vger.kernel.org"),
           bodyText = Some(patch.body)
         )
       }
