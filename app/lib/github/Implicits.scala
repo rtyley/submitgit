@@ -38,7 +38,7 @@ object Implicits {
 
     lazy val primaryEmail = emails.find(_.isPrimary).get
 
-    lazy val verifiedEmails = emails.filter(_.isVerified)
+    lazy val verifiedEmails: Seq[GHEmail] = emails.filter(_.isVerified)
   }
 
   implicit class RichIssue(issue: GHIssue) {

@@ -18,10 +18,14 @@ package controllers
 
 import java.io.File
 
+import com.amazonaws.services.simpleemail.{AmazonSimpleEmailServiceAsync, AmazonSimpleEmailServiceAsyncClient}
+import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import lib._
-import lib.github.{GitHubAuthResponse, Implicits}
+import lib.aws.SesAsyncHelpers._
+import lib.github.GitHubAuthResponse
 import lib.github.Implicits._
+import lib.okhttpscala._
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -29,13 +33,12 @@ import play.api.Play.current
 import play.api.libs.json.Json
 import play.api.libs.mailer.{Email, MailerPlugin}
 import play.api.libs.ws.WS
-import play.api.mvc.Security.AuthenticatedBuilder
+import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
 import play.api.mvc._
-import lib.okhttpscala._
-import com.squareup.okhttp
 
 import scala.collection.convert.wrapAsScala._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {
@@ -82,6 +85,11 @@ object Application extends Controller {
     Ok(views.html.listPullRequests(repo, userPRs, myself))
   }
 
+  def routeMailPullRequest(pr: GHPullRequest) = {
+    val repo = pr.getRepository
+    routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
+  }
+
   def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction { implicit req =>
     val myself = req.user.getMyself
     val pullRequest = req.user.getRepository(rootRepo).getPullRequest(number)
@@ -89,12 +97,7 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(pullRequest, myself))
   }
 
-  def routeMailPullRequest(pr: GHPullRequest) = {
-    val repo = pr.getRepository
-    routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
-  }
-
-    def mailPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction.async {
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction.async {
     implicit req =>
 
       def emailFor(patch: Patch): Email = {
@@ -132,6 +135,31 @@ object Application extends Controller {
       // pullRequest.close()
       Ok("whatever")
     }
+  }
+
+  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient()
+
+  type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
+
+  def ensureGitHubVerified(email: String) = new ActionFilter[AuthRequest] {
+    override protected def filter[A](request: AuthRequest[A]): Future[Option[Result]] = Future {
+      val user = request.user.getMyself
+      if (user.verifiedEmails.map(_.getEmail).contains(email)) None
+      else {
+        Some(Forbidden(s"Not a GitHub-verified email for ${user.atLogin}"))
+      }
+    }
+  }
+
+  def gitHubUserWithVerified(email: String): ActionBuilder[AuthRequest] =
+    GitHubAuthenticatedAction andThen ensureGitHubVerified(email)
+
+  def isRegisteredEmail(email: String) = gitHubUserWithVerified(email).async {
+    for (status <- ses.getIdentityVerificationStatusFor(email)) yield Ok(status)
+  }
+
+  def registerEmail(email: String) = gitHubUserWithVerified(email).async {
+    for (res <- ses.sendVerificationEmailTo(email)) yield Ok
   }
 
   lazy val gitCommitId = {
