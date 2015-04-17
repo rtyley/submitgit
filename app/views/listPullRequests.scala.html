@@ -1,4 +1,4 @@
-@(pullRequests: Seq[org.kohsuke.github.GHPullRequest], user: org.kohsuke.github.GHMyself)(implicit req: Request[AnyContent])
+@(repo: org.kohsuke.github.GHRepository, pullRequests: Seq[org.kohsuke.github.GHPullRequest], user: org.kohsuke.github.GHMyself)
 @import lib.github
 @import github.Implicits._
 @import helper._
@@ -7,17 +7,16 @@
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
-            <h3>Brrm</h3>
+            <h3>Your pull requests against <a href="@repo.getUrl">@repo.getFullName</a></h3>
             <p class="alert-warning">You're <a href="@user.getHtmlUrl">@user.atLogin</a>.</p>
-            @for(pullRequest <- pullRequests) {
-                @form(Application.routeMailPullRequest(pullRequest)) {
-                    @CSRF.formField
-                    <div class="gh-org">
-                        @pullRequest.getTitle
-                        <button class="btn btn-xs btn-primary gh-org-btn" value="submit">@pullRequest.getNumber</button>
-                    </div>
+            <ul>
+                @for(pullRequest <- pullRequests) {
+                    <li>
+                        <a href="@Application.routeMailPullRequest(pullRequest)">#@pullRequest.getNumber @pullRequest.getTitle</a>
+                    </li>
                 }
-            }
+            </ul>
+
         </div>
     </div>
 }

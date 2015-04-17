@@ -61,7 +61,7 @@ object Application extends Controller {
   def oauthCallback(code: String) = Action.async {
     for (response <- bareAccessTokenRequest.withQueryString("code" -> code).post("")) yield {
       val accessToken = response.json.validate[GitHubAuthResponse].get.access_token
-      Redirect("/").withSession(AccessTokenSessionKey -> accessToken)
+      Redirect(routes.Application.listPullRequests("git","git")).withSession(AccessTokenSessionKey -> accessToken)
     }
   }
 
@@ -76,15 +76,17 @@ object Application extends Controller {
 
   def listPullRequests(repoOwner: String, repoName: String) = GitHubAuthenticatedAction { implicit req =>
     val myself = req.user.getMyself
-    val userPRs = req.user.getRepository(rootRepo).getPullRequests(GHIssueState.OPEN).filter(_.getUser.equals(myself))
+    val repo = req.user.getRepository(rootRepo)
+    val userPRs = repo.getPullRequests(GHIssueState.OPEN).filter(_.getUser.equals(myself))
 
-    Ok(views.html.listPullRequests(userPRs, myself))
+    Ok(views.html.listPullRequests(repo, userPRs, myself))
   }
 
   def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction { implicit req =>
+    val myself = req.user.getMyself
     val pullRequest = req.user.getRepository(rootRepo).getPullRequest(number)
 
-    Ok("whatever")
+    Ok(views.html.reviewPullRequest(pullRequest, myself))
   }
 
   def routeMailPullRequest(pr: GHPullRequest) = {
