@@ -39,6 +39,7 @@ libraryDependencies ++= Seq(
   "com.madgag.scala-git" %% "scala-git-test" % "2.9" % "test",
   "org.specs2" %% "specs2-core" % "2.4.17" % "test",
   "org.specs2" %% "specs2-junit" % "2.4.17" % "test",
+  "com.amazonaws" % "aws-java-sdk-ses" % "1.9.31",
   "com.typesafe.play" %% "play-mailer" % "2.4.0"
 )     
 
