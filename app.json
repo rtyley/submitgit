@@ -1,0 +1,26 @@
+{
+  "name": "submitGit",
+  "description": "A bridge for submitting PRs to the GitHub mailing list",
+  "repository": "https://github.com/rtyley/submitgit",
+  "logo": "https://cloud.githubusercontent.com/assets/52038/5842786/aed6db4a-a19f-11e4-820b-48bce30a8eee.png",
+  "success_url": "/",
+  "keywords": ["github", "pull request", "git", "patch", "email"],
+  "env": {
+    "GITHUB_APP_CLIENT_ID": {
+      "description": "register your instance of submitGit as an application in your GitHub settings.",
+      "required": true
+    },
+    "GITHUB_APP_CLIENT_SECRET": {
+      "description": "The Client Secret credentials for GitHub OAuth V2.",
+      "required": true
+    },
+    "AWS_ACCESS_KEY_ID": {
+      "description": " AWS access key ID",
+      "required": true
+    },
+    "AWS_SECRET_KEY": {
+      "description": "AWS secret key",
+      "required": true
+    }
+  }
+}
