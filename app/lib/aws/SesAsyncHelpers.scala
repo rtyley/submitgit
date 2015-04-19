@@ -3,9 +3,10 @@ package lib.aws
 import com.amazonaws.AmazonWebServiceRequest
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsync
-import com.amazonaws.services.simpleemail.model.{GetIdentityVerificationAttributesRequest, GetIdentityVerificationAttributesResult, VerifyEmailIdentityRequest, VerifyEmailIdentityResult}
-import controllers.Application._
+import com.amazonaws.services.simpleemail.model._
+import lib.Email
 
+import scala.collection.convert.wrapAll._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 object SesAsyncHelpers {
@@ -47,6 +48,16 @@ object SesAsyncHelpers {
       var idReq = new GetIdentityVerificationAttributesRequest().withIdentities(email)
       for (res <- ses.getIdentityVerificationAttributesFuture(idReq)) yield
         res.getVerificationAttributes.get(email).getVerificationStatus
+    }
+
+    def sendRawEmailFuture(req: SendRawEmailRequest): Future[SendRawEmailResult] =
+      invoke(ses.sendRawEmailAsync, req)
+
+    def send(email: Email)(implicit ec: ExecutionContext): Future[String] = {
+      val rawEmailRequest = new SendRawEmailRequest(new RawMessage(email.toMimeMessage))
+      rawEmailRequest.setDestinations(email.to)
+      rawEmailRequest.setSource(email.from)
+      sendRawEmailFuture(rawEmailRequest).map(resp => s"<${resp.getMessageId}@eu-west-1.amazonses.com>")
     }
   }
 

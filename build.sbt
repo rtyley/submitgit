@@ -40,8 +40,8 @@ libraryDependencies ++= Seq(
   "org.specs2" %% "specs2-core" % "2.4.17" % "test",
   "org.specs2" %% "specs2-junit" % "2.4.17" % "test",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.9.31",
-  "com.typesafe.play" %% "play-mailer" % "2.4.0"
-)     
+  "com.sun.mail" % "javax.mail" % "1.5.3"
+)
 
 sources in (Compile,doc) := Seq.empty
 

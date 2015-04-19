@@ -18,7 +18,11 @@ package controllers
 
 import java.io.File
 
+import com.amazonaws.auth.profile.ProfileCredentialsProvider
+import com.amazonaws.auth.{AWSCredentialsProviderChain, EnvironmentVariableCredentialsProvider}
+import com.amazonaws.regions.Regions.EU_WEST_1
 import com.amazonaws.services.simpleemail.{AmazonSimpleEmailServiceAsync, AmazonSimpleEmailServiceAsyncClient}
+import com.github.nscala_time.time.Imports._
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import lib._
@@ -31,12 +35,11 @@ import org.kohsuke.github._
 import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json.Json
-import play.api.libs.mailer.{Email, MailerPlugin}
 import play.api.libs.ws.WS
 import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
 import play.api.mvc._
 
-import scala.collection.convert.wrapAsScala._
+import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
@@ -97,7 +100,9 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(pullRequest, myself))
   }
 
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction.async {
+
+
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = LegitGitHubAction.async {
     implicit req =>
 
       def emailFor(patch: Patch): Email = {
@@ -106,9 +111,9 @@ object Application extends Controller {
         Email(
           subject = patch.subject,
           from = user.primaryEmail.getEmail, //commit.getAuthor.getEmail
-          to = Seq(user.primaryEmail.getEmail),
-          // cc = Seq("autoanswer@vger.kernel.org"),
-          bodyText = Some(patch.body)
+          to = Seq("submitgit-test@googlegroups.com"),
+          cc = Seq(user.primaryEmail.getEmail),
+          bodyText = patch.body
         )
       }
     val pullRequest = req.user.getRepository(rootRepo).getPullRequest(number)
@@ -124,11 +129,10 @@ object Application extends Controller {
       val patch = resp.body.string
 
       val commitsAndPatches = Patches.commitsAndPatches(commits.map(c => ObjectId.fromString(c.getSha)), patch)
-
-      val initialMessageId = MailerPlugin.send(emailFor(commitsAndPatches.head._2))
-
-      for ((commit, patch) <- commitsAndPatches.drop(1)) {
-        println(MailerPlugin.send(emailFor(patch).copy(headers = Seq("References" -> initialMessageId))))
+      for (initialMessageId <- ses.send(emailFor(commitsAndPatches.head._2))) {
+        for ((commit, patch) <- commitsAndPatches.drop(1)) {
+          ses.send(emailFor(patch).copy(headers = Seq("References" -> initialMessageId, "In-Reply-To" -> initialMessageId)))
+        }
       }
 
       // pullRequest.comment("Closed by submitgit")
@@ -137,7 +141,12 @@ object Application extends Controller {
     }
   }
 
-  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient()
+  val AwsCredentials = new AWSCredentialsProviderChain(
+    new ProfileCredentialsProvider("submitgit"),
+    new EnvironmentVariableCredentialsProvider()
+  )
+
+  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient(AwsCredentials).withRegion(EU_WEST_1)
 
   type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
 
@@ -145,14 +154,24 @@ object Application extends Controller {
     override protected def filter[A](request: AuthRequest[A]): Future[Option[Result]] = Future {
       val user = request.user.getMyself
       if (user.verifiedEmails.map(_.getEmail).contains(email)) None
-      else {
-        Some(Forbidden(s"Not a GitHub-verified email for ${user.atLogin}"))
-      }
+      else Some(Forbidden(s"Not a GitHub-verified email for ${user.atLogin}"))
     }
   }
 
+  val EnsureSeemsLegit = new ActionFilter[AuthRequest] {
+    override protected def filter[A](request: AuthRequest[A]): Future[Option[Result]] = Future {
+      val user = request.user.getMyself
+      if (user.createdAt > DateTime.now - 3.months) Some(Forbidden(s"${user.atLogin}'s GitHub account is less than 3 months old"))
+      else if (user.verifiedEmails.isEmpty) Some(Forbidden(s"No verified emails on ${user.atLogin}'s GitHub account"))
+      else None
+    }
+  }
+
+  val LegitGitHubAction = GitHubAuthenticatedAction andThen EnsureSeemsLegit
+
   def gitHubUserWithVerified(email: String): ActionBuilder[AuthRequest] =
-    GitHubAuthenticatedAction andThen ensureGitHubVerified(email)
+    LegitGitHubAction andThen ensureGitHubVerified(email)
+
 
   def isRegisteredEmail(email: String) = gitHubUserWithVerified(email).async {
     for (status <- ses.getIdentityVerificationStatusFor(email)) yield Ok(status)
