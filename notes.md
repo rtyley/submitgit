@@ -6,6 +6,10 @@ is cc'd on the message, so they at least get the reply when people reply-all
 3. Use a service like Amazon SES, which has an API for adding verified
 email addresses : http://docs.aws.amazon.com/ses/latest/APIReference/API_VerifyEmailIdentity.html
 
+Need to go *raw* with SES in order to send 'In-Reply-To' & 'References'
+headers:
+http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-raw.html
+
 The From address should be the authenticated GitHub user address, not
 the email address on the commit - the GitHub user is the person
 submitting this patch.
