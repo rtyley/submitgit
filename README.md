@@ -1,4 +1,4 @@
-submitGit
+submitGit (pre-alpha - DO NOT USE)
 =========
 
 The Git project has a [patch submission process](https://github.com/git/git/blob/1eb0545c/Documentation/SubmittingPatches#L120-L464)
