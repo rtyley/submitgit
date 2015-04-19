@@ -19,7 +19,7 @@ the mailing list, and won't be reviewing, for instance, GitHub or
 Bitbucket pull requests.
 
 _submitGit_ is a small step in trying to make patch submission
-more easy. If you create a pull request on github.com/git/git/,
+more easy. If you create a pull request on [github.com/git/git/](https://github.com/git/git/pulls),
 _submitGit_ can close it for you by correctly formatting it as
 a series of patches, and sending it to the mailing list. The
 discussion stays where it is- on the list -but at least that
