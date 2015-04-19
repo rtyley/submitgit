@@ -45,6 +45,8 @@ import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {
+  
+  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient(AwsCredentials).withRegion(EU_WEST_1)
 
   val rootRepo = "rtyley/bfg-repo-cleaner" // "git/git"
 
@@ -143,8 +145,6 @@ object Application extends Controller {
     new ProfileCredentialsProvider("submitgit"),
     new EnvironmentVariableCredentialsProvider()
   )
-
-  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient(AwsCredentials).withRegion(EU_WEST_1)
 
   type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
 
