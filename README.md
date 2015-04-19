@@ -7,7 +7,7 @@ contributor - wanting to fix a small bug, or tweak documentation
 to make it more friendly - will learn that mailing a patch is
 [not as simple as you might expect](http://git-scm.com/docs/git-format-patch#_mua_specific_hints),
 especially if they're using a webmail service, like Gmail. The
-recommende approach is to forgo regular email clients, and
+recommended approach is to forgo regular email clients, and
 use [`git-format-patch`](http://git-scm.com/docs/git-format-patch)
 and [`git-send-email`](http://git-scm.com/docs/git-send-email`)
 on the command-line to ensure nothing gets lost or auto-bounced
