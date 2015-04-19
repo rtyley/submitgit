@@ -1,13 +1,12 @@
 @(repo: org.kohsuke.github.GHRepository, pullRequests: Seq[org.kohsuke.github.GHPullRequest], user: org.kohsuke.github.GHMyself)
 @import lib.github
 @import github.Implicits._
-@import helper._
 
 @main {
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
-            <h3>Your pull requests against <a href="@repo.getUrl">@repo.getFullName</a></h3>
+            <h3>Your pull requests against <a href="@repo.gitHttpTransportUrl">@repo.getFullName</a></h3>
             <p class="alert-warning">You're <a href="@user.getHtmlUrl">@user.atLogin</a>.</p>
             <ul>
                 @for(pullRequest <- pullRequests) {

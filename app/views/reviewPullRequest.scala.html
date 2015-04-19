@@ -1,6 +1,4 @@
 @(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself)(implicit req: Request[AnyContent])
-@import lib.github
-@import github.Implicits._
 @import helper._
 
 @main {
@@ -9,14 +7,11 @@
         <div class="col-md-6">
             <h3>#@pullRequest.getNumber @pullRequest.getTitle</h3>
             <a href="@pullRequest.getHtmlUrl">github</a>
-            @pullRequest.getBody
-            <p>@pullRequest</p>
+            <pre>@pullRequest.getBody</pre>
                 @form(Application.routeMailPullRequest(pullRequest)) {
                     @CSRF.formField
-                    <div class="gh-org">
-                        @pullRequest.getTitle
-                        <button class="btn btn-xs btn-primary gh-org-btn" value="submit">@pullRequest.getNumber</button>
-                    </div>
+                    <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">Test</button>
+                    <button class="btn btn-primary btn-danger" value="send">Send to git@@vger.kernel.org</button>
                 }
         </div>
     </div>
