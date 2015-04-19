@@ -100,8 +100,6 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(pullRequest, myself))
   }
 
-
-
   def mailPullRequest(repoOwner: String, repoName: String, number: Int) = LegitGitHubAction.async {
     implicit req =>
 
@@ -112,7 +110,7 @@ object Application extends Controller {
           subject = patch.subject,
           from = user.primaryEmail.getEmail, //commit.getAuthor.getEmail
           to = Seq("submitgit-test@googlegroups.com"),
-          cc = Seq(user.primaryEmail.getEmail),
+          bcc = Seq(user.primaryEmail.getEmail),
           bodyText = patch.body
         )
       }
