@@ -5,8 +5,8 @@
 
         <div class="col-md-3"></div>
         <div class="col-md-6 text-center">
-            <h2>Boom boom</h2>
-            <p>foofoofoo</p>
+            <h2>Contribute to Git!</h2>
+            <p><i>Patches for the mailing list... pull requests for you</i></p>
             <a href="@routes.Application.listPullRequests("git","git")"><button class="btn btn-primary input-lg">Log In via GitHub!</button></a>
         </div>
     </div>
@@ -14,11 +14,28 @@
     <div class="row">
         <div class="col-md-6">
             <h3>What is <i>submitgit?</i></h3>
-            <p>Foo</p>
+            <p>The Git project has a <a href="https://github.com/git/git/blob/1eb0545c/Documentation/SubmittingPatches#L120-L464">patch submission process</a>
+                that's unfamilar <em>for the majority of Git users</em>: hitting the mailing list with
+                <a href="http://git-scm.com/docs/git-format-patch"><code>git-format-patch</code></a>
+                and <a href="http://git-scm.com/docs/git-send-email"><code>git-send-email</code></a>.</p>
+            <p><em>submitGit</em> is a small step in trying to make the process
+                more easy. If you create a pull request on <a href="https://github.com/git/git/pulls">github.com/git/git</a>,
+                <em>submitGit</em> can close it for you by correctly formatting it as
+                a series of patches, and sending it to the mailing list.</p>
+
+            <p>The patch review stays on the list - but at least you no longer need to learn a <em>whole new method of email</em>
+                to submit your improvement to Git.</p>
         </div>
         <div class="col-md-6">
             <h3>Prerequisites</h3>
-            <p>Bar</p>
+            <p>Your GitHub account must be older than 3 months for <i>submitgit</i> to actually mail the
+                Git mailing list for you (you can still do test mails to yourself).</p>
+            <p>Read the Git project's
+                <a href="https://github.com/git/git/blob/master/Documentation/SubmittingPatches">guidelines for submitting patches</a>,
+                about half of this document is about how to send a patch via email without it getting corrupted - which <i>submitgit</i>
+                will do for you - but the other half is valuable advice, about making your patch better and increasing the chances
+                of it getting accepted.
+            </p>
         </div>
     </div>
 }
