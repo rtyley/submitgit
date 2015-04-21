@@ -22,9 +22,9 @@ import com.amazonaws.auth.profile.ProfileCredentialsProvider
 import com.amazonaws.auth.{AWSCredentialsProviderChain, EnvironmentVariableCredentialsProvider}
 import com.amazonaws.regions.Regions.EU_WEST_1
 import com.amazonaws.services.simpleemail.{AmazonSimpleEmailServiceAsync, AmazonSimpleEmailServiceAsyncClient}
-import com.github.nscala_time.time.Imports._
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
+import controllers.Actions._
 import lib._
 import lib.aws.SesAsyncHelpers._
 import lib.github.GitHubAuthResponse
@@ -36,19 +36,25 @@ import play.api.Logger
 import play.api.Play.current
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
-import play.api.mvc.Security.{AuthenticatedBuilder, AuthenticatedRequest}
+import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {
-  
+
+  type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
+
+  val AwsCredentials = new AWSCredentialsProviderChain(
+    new ProfileCredentialsProvider("submitgit"),
+    new EnvironmentVariableCredentialsProvider()
+  )
+
   val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient(AwsCredentials).withRegion(EU_WEST_1)
 
-  val rootRepo = "rtyley/bfg-repo-cleaner" // "git/git"
+  val repoWhiteList= Set("git/git", "submitgit/pretend-git")
 
   val AccessTokenSessionKey = "githubAccessToken"
 
@@ -73,21 +79,11 @@ object Application extends Controller {
     }
   }
 
-  val redirectToGitHubForAuth = Redirect(ghAuthUrl)
+  def listPullRequests(repoOwner: String, repoName: String) = githubRepoAction(repoOwner, repoName) { implicit req =>
+    val myself = req.gitHub.getMyself
+    val userPRs = req.repo.getPullRequests(GHIssueState.OPEN).filter(_.getUser.equals(myself))
 
-  def userGitHubConnectionForSessionAccessToken(req: RequestHeader): Option[GitHub] = for {
-    accessToken <- req.session.get(AccessTokenSessionKey)
-    gitHubConn <- Try(GitHub.connectUsingOAuth(accessToken)).toOption
-  } yield gitHubConn
-
-  val GitHubAuthenticatedAction = new AuthenticatedBuilder(userGitHubConnectionForSessionAccessToken, _ => redirectToGitHubForAuth)
-
-  def listPullRequests(repoOwner: String, repoName: String) = GitHubAuthenticatedAction { implicit req =>
-    val myself = req.user.getMyself
-    val repo = req.user.getRepository(rootRepo)
-    val userPRs = repo.getPullRequests(GHIssueState.OPEN).filter(_.getUser.equals(myself))
-
-    Ok(views.html.listPullRequests(repo, userPRs, myself))
+    Ok(views.html.listPullRequests(req.repo, userPRs, myself))
   }
 
   def routeMailPullRequest(pr: GHPullRequest) = {
@@ -95,22 +91,21 @@ object Application extends Controller {
     routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
   }
 
-  def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = GitHubAuthenticatedAction { implicit req =>
-    val myself = req.user.getMyself
-    val pullRequest = req.user.getRepository(rootRepo).getPullRequest(number)
+  def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = githubPRAction(repoOwner, repoName, number) { implicit req =>
+    val myself = req.gitHub.getMyself
 
-    Ok(views.html.reviewPullRequest(pullRequest, myself))
+    Ok(views.html.reviewPullRequest(req.pr, myself))
   }
 
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = LegitGitHubAction.async {
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen EnsureSeemsLegit).async {
     implicit req =>
 
       def emailFor(patch: Patch): Email = {
-        val user = req.user.getMyself
+        val user = req.gitHub.getMyself
 
         Email(
           subject = patch.subject,
-          from = user.primaryEmail.getEmail, //commit.getAuthor.getEmail
+          from = user.primaryEmail.getEmail,
           to = Seq("submitgit-test@googlegroups.com"),
           bcc = Seq(user.primaryEmail.getEmail),
           bodyText = patch.body
@@ -141,33 +136,7 @@ object Application extends Controller {
     }
   }
 
-  val AwsCredentials = new AWSCredentialsProviderChain(
-    new ProfileCredentialsProvider("submitgit"),
-    new EnvironmentVariableCredentialsProvider()
-  )
-
-  type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
-
-  def ensureGitHubVerified(email: String) = new ActionFilter[AuthRequest] {
-    override protected def filter[A](request: AuthRequest[A]): Future[Option[Result]] = Future {
-      val user = request.user.getMyself
-      if (user.verifiedEmails.map(_.getEmail).contains(email)) None
-      else Some(Forbidden(s"Not a GitHub-verified email for ${user.atLogin}"))
-    }
-  }
-
-  val EnsureSeemsLegit = new ActionFilter[AuthRequest] {
-    override protected def filter[A](request: AuthRequest[A]): Future[Option[Result]] = Future {
-      val user = request.user.getMyself
-      if (user.createdAt > DateTime.now - 3.months) Some(Forbidden(s"${user.atLogin}'s GitHub account is less than 3 months old"))
-      else if (user.verifiedEmails.isEmpty) Some(Forbidden(s"No verified emails on ${user.atLogin}'s GitHub account"))
-      else None
-    }
-  }
-
-  val LegitGitHubAction = GitHubAuthenticatedAction andThen EnsureSeemsLegit
-
-  def gitHubUserWithVerified(email: String): ActionBuilder[AuthRequest] =
+  def gitHubUserWithVerified(email: String): ActionBuilder[GHRequest] =
     LegitGitHubAction andThen ensureGitHubVerified(email)
 
 
@@ -198,5 +167,6 @@ object Application extends Controller {
     } yield objectId.name
   }
 }
+
 
 
