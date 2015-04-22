@@ -18,14 +18,11 @@ package controllers
 
 import java.io.File
 
-import com.amazonaws.auth.profile.ProfileCredentialsProvider
-import com.amazonaws.auth.{AWSCredentialsProviderChain, EnvironmentVariableCredentialsProvider}
-import com.amazonaws.regions.Regions.EU_WEST_1
-import com.amazonaws.services.simpleemail.{AmazonSimpleEmailServiceAsync, AmazonSimpleEmailServiceAsyncClient}
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import controllers.Actions._
 import lib._
+import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
 import lib.github.GitHubAuthResponse
 import lib.github.Implicits._
@@ -46,13 +43,6 @@ import scala.util.Try
 object Application extends Controller {
 
   type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
-
-  val AwsCredentials = new AWSCredentialsProviderChain(
-    new ProfileCredentialsProvider("submitgit"),
-    new EnvironmentVariableCredentialsProvider()
-  )
-
-  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient(AwsCredentials).withRegion(EU_WEST_1)
 
   val repoWhiteList= Set("git/git", "submitgit/pretend-git")
 
@@ -134,18 +124,6 @@ object Application extends Controller {
       // pullRequest.close()
       Ok("whatever")
     }
-  }
-
-  def gitHubUserWithVerified(email: String): ActionBuilder[GHRequest] =
-    githubAction() andThen ensureGitHubVerified(email)
-
-
-  def isRegisteredEmail(email: String) = gitHubUserWithVerified(email).async {
-    for (status <- ses.getIdentityVerificationStatusFor(email)) yield Ok(status)
-  }
-
-  def registerEmail(email: String) = gitHubUserWithVerified(email).async {
-    for (res <- ses.sendVerificationEmailTo(email)) yield Ok
   }
 
   lazy val gitCommitId = {
