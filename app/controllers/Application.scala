@@ -97,7 +97,7 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(req.pr, myself))
   }
 
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen EnsureSeemsLegit).async {
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen new LegitFilter).async {
     implicit req =>
 
       def emailFor(patch: Patch): Email = {
@@ -111,7 +111,7 @@ object Application extends Controller {
           bodyText = patch.body
         )
       }
-    val pullRequest = req.user.getRepository(rootRepo).getPullRequest(number)
+    val pullRequest = req.repo.getPullRequest(number)
 
     val commits = pullRequest.listCommits().toSeq
 
@@ -137,7 +137,7 @@ object Application extends Controller {
   }
 
   def gitHubUserWithVerified(email: String): ActionBuilder[GHRequest] =
-    LegitGitHubAction andThen ensureGitHubVerified(email)
+    githubAction() andThen ensureGitHubVerified(email)
 
 
   def isRegisteredEmail(email: String) = gitHubUserWithVerified(email).async {
