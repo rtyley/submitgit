@@ -87,6 +87,10 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(req.pr, myself))
   }
 
+  /**
+   * Test emails: your email must be verified with GitHub and older than 1 week?
+   * Mailing list emails: GitHub account older than 3 months & email registered with submitGit
+   */
   def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen new LegitFilter).async {
     implicit req =>
 

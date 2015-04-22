@@ -16,7 +16,9 @@ class GHRequest[A](val gitHub: GitHub, request: Request[A]) extends WrappedReque
 
 class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[A]) extends GHRequest[A](gitHub, request)
 
-class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request)
+class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
+  lazy val userOwnsPR = gitHub.getMyself == pr.getUser
+}
 
 object Actions {
   val redirectToGitHubForAuth = Redirect(ghAuthUrl)
