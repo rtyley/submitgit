@@ -40,9 +40,11 @@ object Actions {
 
   def githubRepoAction(repoOwner: String, repoName: String) = githubAction() andThen new ActionRefiner[GHRequest, GHRepoRequest] {
     override protected def refine[A](request: GHRequest[A]): Future[Either[Result, GHRepoRequest[A]]] = Future {
-      val gitHub = request.gitHub
-      val repo = gitHub.getRepository(s"$repoOwner/$repoName")
-      Either.cond(repoWhiteList(repo.getFullName), new GHRepoRequest(gitHub, repo, request), Forbidden("Not a supported repo"))
+      val repoFullName = s"$repoOwner/$repoName"
+      Either.cond(repoWhiteList(repoFullName), {
+        val gitHub = request.gitHub
+        val repo = gitHub.getRepository(repoFullName)
+        new GHRepoRequest(gitHub, repo, request)}, Forbidden("Not a supported repo"))
     }
   }
 
