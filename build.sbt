@@ -6,22 +6,20 @@ scalaVersion := "2.11.6"
 
 updateOptions := updateOptions.value.withCachedResolution(true)
 
-buildInfoSettings
-
-sourceGenerators in Compile <+= buildInfo
-
-buildInfoKeys := Seq[BuildInfoKey](
-  name,
-  BuildInfoKey.constant("gitCommitId", Option(System.getenv("BUILD_VCS_NUMBER")) getOrElse(try {
-    "git rev-parse HEAD".!!.trim
-  } catch {
-    case e: Exception => "unknown"
-  }))
+lazy val root = (project in file(".")).enablePlugins(
+  PlayScala,
+  BuildInfoPlugin
+).settings(
+  buildInfoKeys := Seq[BuildInfoKey](
+    name,
+    BuildInfoKey.constant("gitCommitId", Option(System.getenv("BUILD_VCS_NUMBER")) getOrElse(try {
+      "git rev-parse HEAD".!!.trim
+    } catch { case e: Exception => "unknown" }))
+  ),
+  buildInfoPackage := "app"
 )
 
-buildInfoPackage := "app"
-
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+sourceGenerators in Compile <+= buildInfo
 
 libraryDependencies ++= Seq(
   cache,

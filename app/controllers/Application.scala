@@ -71,9 +71,10 @@ object Application extends Controller {
 
   def listPullRequests(repoOwner: String, repoName: String) = githubRepoAction(repoOwner, repoName) { implicit req =>
     val myself = req.gitHub.getMyself
-    val userPRs = req.repo.getPullRequests(GHIssueState.OPEN).filter(_.getUser.equals(myself))
+    val openPRs = req.repo.getPullRequests(GHIssueState.OPEN)
+    val (userPRs, otherPRs) = openPRs.partition(_.getUser.equals(myself))
 
-    Ok(views.html.listPullRequests(req.repo, userPRs, myself))
+    Ok(views.html.listPullRequests(userPRs, otherPRs))
   }
 
   def routeMailPullRequest(pr: GHPullRequest) = {
