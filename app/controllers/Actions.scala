@@ -24,7 +24,7 @@ class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A])
 
   lazy val testEmail = Email(
     subject = "",
-    from = "roberto.tyley@gmail.com",
+    from = "submitGit <submitgit@gmail.com>",
     to = Seq(user.primaryEmail.getEmail),
     bodyText = ""
   )

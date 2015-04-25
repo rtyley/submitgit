@@ -95,14 +95,12 @@ object Application extends Controller {
   def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen new LegitFilter).async {
     implicit req =>
 
+      val baseEmail = req.email(selfTest = true)
+
       def emailFor(patch: Patch): Email = {
         val user = req.gitHub.getMyself
-
-        Email(
+        baseEmail.copy(
           subject = patch.subject,
-          from = user.primaryEmail.getEmail,
-          to = Seq("submitgit-test@googlegroups.com"),
-          bcc = Seq(user.primaryEmail.getEmail),
           bodyText = patch.body
         )
       }
