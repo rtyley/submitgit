@@ -95,38 +95,37 @@ object Application extends Controller {
   def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen new LegitFilter).async {
     implicit req =>
 
-      val baseEmail = req.email(selfTest = true)
+      val addresses = req.email(selfTest = true)
 
-      def emailFor(patch: Patch): Email = {
-        val user = req.gitHub.getMyself
-        baseEmail.copy(
+      def emailFor(patch: Patch)= Email(
+          addresses,
           subject = patch.subject,
           bodyText = patch.body
         )
-      }
-    val pullRequest = req.repo.getPullRequest(number)
 
-    val commits = pullRequest.listCommits().toSeq
+      val pullRequest = req.repo.getPullRequest(number)
 
-    require(commits.size < 10)
+      val commits = pullRequest.listCommits().toSeq
 
-    val patchUrl = pullRequest.getPatchUrl.toString
-    for {
-      resp <- new OkHttpClient().execute(new okhttp.Request.Builder().url(patchUrl).build())
-    } yield {
-      val patch = resp.body.string
+      require(commits.size < 10)
 
-      val commitsAndPatches = Patches.commitsAndPatches(commits.map(c => ObjectId.fromString(c.getSha)), patch)
-      for (initialMessageId <- ses.send(emailFor(commitsAndPatches.head._2))) {
-        for ((commit, patch) <- commitsAndPatches.drop(1)) {
-          ses.send(emailFor(patch).copy(headers = Seq("References" -> initialMessageId, "In-Reply-To" -> initialMessageId)))
+      val patchUrl = pullRequest.getPatchUrl.toString
+      for {
+        resp <- new OkHttpClient().execute(new okhttp.Request.Builder().url(patchUrl).build())
+      } yield {
+        val patch = resp.body.string
+
+        val commitsAndPatches = Patches.commitsAndPatches(commits.map(c => ObjectId.fromString(c.getSha)), patch)
+        for (initialMessageId <- ses.send(emailFor(commitsAndPatches.head._2))) {
+          for ((commit, patch) <- commitsAndPatches.drop(1)) {
+            ses.send(emailFor(patch).copy(headers = Seq("References" -> initialMessageId, "In-Reply-To" -> initialMessageId)))
+          }
         }
-      }
 
-      // pullRequest.comment("Closed by submitgit")
-      // pullRequest.close()
-      Ok("whatever")
-    }
+        // pullRequest.comment("Closed by submitgit")
+        // pullRequest.close()
+        Ok("whatever")
+      }
   }
 
   lazy val gitCommitId = {

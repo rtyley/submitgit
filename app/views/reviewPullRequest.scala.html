@@ -1,4 +1,4 @@
-@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself)(implicit req: Request[AnyContent])
+@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself)(implicit req: GHPRRequest[_])
 @import helper._
 
 @main {
@@ -6,12 +6,19 @@
         <div class="col-md-3"></div>
         <div class="col-md-6">
             <h3>#@pullRequest.getNumber @pullRequest.getTitle</h3>
+            <table class="table">
+                ...
+            </table>
+
             <a href="@pullRequest.getHtmlUrl">github</a>
             <pre>@pullRequest.getBody</pre>
                 @form(Application.routeMailPullRequest(pullRequest)) {
                     @CSRF.formField
                     <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">Test</button>
-                    <button class="btn btn-primary btn-danger" value="send">Send to git@@vger.kernel.org</button>
+                    @fragments.emailAddresses(req.email(true))
+
+                    <button class="btn btn-primary btn-danger" value="send">Send</button>
+                    @fragments.emailAddresses(req.email(false))
                 }
         </div>
     </div>

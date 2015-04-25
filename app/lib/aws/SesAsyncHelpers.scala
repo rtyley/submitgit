@@ -55,8 +55,8 @@ object SesAsyncHelpers {
 
     def send(email: Email)(implicit ec: ExecutionContext): Future[String] = {
       val rawEmailRequest = new SendRawEmailRequest(new RawMessage(email.toMimeMessage))
-      rawEmailRequest.setDestinations(email.to)
-      rawEmailRequest.setSource(email.from)
+      rawEmailRequest.setDestinations(email.addresses.to)
+      rawEmailRequest.setSource(email.addresses.from)
       sendRawEmailFuture(rawEmailRequest).map(resp => s"<${resp.getMessageId}@eu-west-1.amazonses.com>")
     }
   }

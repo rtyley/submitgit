@@ -1,0 +1,8 @@
+@(addresses: lib.Email.Addresses)
+<dl class="dl-horizontal">
+    <dt>From:</dt><dd>@addresses.from</dd>
+    @if(addresses.to.nonEmpty){<dt>To:</dt><dd>@addresses.to.mkString(", ")</dd>}
+    @if(addresses.cc.nonEmpty){<dt>Cc:</dt><dd>@addresses.cc.mkString(", ")</dd>}
+    @if(addresses.bcc.nonEmpty){<dt>Bcc:</dt><dd>@addresses.bcc.mkString(", ")</dd>}
+    @for(replyTo <- addresses.replyTo) {<dt>Reply-To:</dt><dd>@replyTo</dd>}
+</dl>

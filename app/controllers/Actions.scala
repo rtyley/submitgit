@@ -22,19 +22,15 @@ class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[
 class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
   lazy val userOwnsPR = user == pr.getUser
 
-  lazy val testEmail = Email(
-    subject = "",
+  lazy val testEmail = Email.Addresses(
     from = "submitGit <submitgit@gmail.com>",
-    to = Seq(user.primaryEmail.getEmail),
-    bodyText = ""
+    to = Seq(user.primaryEmail.getEmail)
   )
 
-  lazy val liveEmail = Email(
-    subject = "",
+  lazy val liveEmail = Email.Addresses(
     from = user.primaryEmail.getEmail,
     to = Seq("submitgit-test@googlegroups.com"),
-    bcc = Seq(user.primaryEmail.getEmail),
-    bodyText = ""
+    bcc = Seq(user.primaryEmail.getEmail)
   )
 
   def email(selfTest: Boolean) = if (selfTest) testEmail else liveEmail
