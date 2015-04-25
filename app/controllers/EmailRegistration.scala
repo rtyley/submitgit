@@ -33,7 +33,7 @@ object EmailRegistration extends Controller {
   }
 
   def registerEmail(email: String) = gitHubUserWithVerified(email).async {
-    for (res <- ses.sendVerificationEmailTo(email)) yield Ok
+    for (res <- ses.sendVerificationEmailTo(email)) yield Ok("Registration email sent")
   }
 
 }
