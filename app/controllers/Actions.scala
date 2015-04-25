@@ -2,6 +2,7 @@ package controllers
 
 import com.github.nscala_time.time.Imports._
 import controllers.Application._
+import lib.Email
 import lib.github.Implicits._
 import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
 import play.api.mvc.Security.AuthenticatedBuilder
@@ -12,12 +13,32 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class GHRequest[A](val gitHub: GitHub, request: Request[A]) extends WrappedRequest[A](request)
+class GHRequest[A](val gitHub: GitHub, request: Request[A]) extends WrappedRequest[A](request) {
+  val user = gitHub.getMyself
+}
 
 class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[A]) extends GHRequest[A](gitHub, request)
 
 class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
-  lazy val userOwnsPR = gitHub.getMyself == pr.getUser
+  lazy val userOwnsPR = user == pr.getUser
+
+  lazy val testEmail = Email(
+    subject = "",
+    from = "roberto.tyley@gmail.com",
+    to = Seq(user.primaryEmail.getEmail),
+    bodyText = ""
+  )
+
+  lazy val liveEmail = Email(
+    subject = "",
+    from = user.primaryEmail.getEmail,
+    to = Seq("submitgit-test@googlegroups.com"),
+    bcc = Seq(user.primaryEmail.getEmail),
+    bodyText = ""
+  )
+
+  def email(selfTest: Boolean) = if (selfTest) testEmail else liveEmail
+
 }
 
 object Actions {
