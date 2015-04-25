@@ -19,8 +19,6 @@ lazy val root = (project in file(".")).enablePlugins(
   buildInfoPackage := "app"
 )
 
-sourceGenerators in Compile <+= buildInfo
-
 libraryDependencies ++= Seq(
   cache,
   filters,
