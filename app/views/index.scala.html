@@ -1,16 +1,11 @@
 @()(implicit req: Request[AnyContent])
 @import helper._
 @main {
-    <div class="row">
-
-        <div class="col-md-3"></div>
-        <div class="col-md-6 text-center">
-            <h2>Contribute to Git!</h2>
-            <p><i>Patches for the mailing list... pull requests for you</i></p>
-            <a href="@routes.Application.listPullRequests("git","git")"><button class="btn btn-primary input-lg">Get started</button></a>
-
-            <p>...or try it on <a href="@routes.Application.listPullRequests("submitgit","pretend-git")">a test repo!</a></p>
-        </div>
+    <div class="jumbotron">
+        <h1>Contribute to Git!</h1>
+        <p><i>Patches for the mailing list... pull requests for you</i></p>
+        <p><a class="btn btn-primary btn-lg" href="@routes.Application.listPullRequests("git","git")" role="button">Get started</a>
+            ...or experiment with a <a href="@routes.Application.listPullRequests("submitgit","pretend-git")">test repo!</a></p>
     </div>
 
     <div class="row">
