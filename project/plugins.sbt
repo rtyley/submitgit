@@ -1,6 +1,8 @@
 // Comment to get more information during initialization
 logLevel := Level.Warn
 
+resolvers += Resolver.typesafeRepo("releases") // Play seems to require quite a few things from here
+
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.0-RC1")
 
