@@ -90,7 +90,7 @@ object Application extends Controller {
   }
 
   def acknowledgePreview(repoOwner: String, repoName: String, number: Int, headCommit: ObjectId, signature: String) =
-    (githubPRAction(repoOwner, repoName, number) andThen new VerifyCommitSignature(headCommit, signature)) {
+    (githubPRAction(repoOwner, repoName, number) andThen verifyCommitSignature(headCommit, signature)) {
     implicit req =>
     Redirect(routes.Application.reviewPullRequest(repoOwner, repoName, number)).addingToSession(PreviewSignatures.signatureFor(headCommit) -> signature)
   }
@@ -99,7 +99,7 @@ object Application extends Controller {
    * Test emails: your email must be verified with GitHub and older than 1 week? Can do anyone's PR (but still restrict to only whitelisted repos?)
    * Mailing list emails: GitHub account older than 3 months & email registered with submitGit. You must have created the PR
    */
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen new LegitFilter).async {
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen legitFilter).async {
     implicit req =>
 
       val mailType = MailType.Preview

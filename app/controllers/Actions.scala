@@ -80,15 +80,15 @@ object Actions {
       else None
     }
   }
-
-  class VerifyCommitSignature[G[X] <: GHRequest[X]](headCommit: ObjectId, signature: String) extends ActionFilter[G] {
+  
+  def verifyCommitSignature[G[X] <: GHRequest[X]](headCommit: ObjectId, signature: String) = new ActionFilter[G] {
     override protected def filter[A](request: G[A]): Future[Option[Result]] = Future {
       if (Crypto.constantTimeEquals(signature, PreviewSignatures.signatureFor(headCommit))) None else
         Some(Unauthorized("Preview signature doesn't match"))
     }
   }
 
-  class LegitFilter[G[X] <: GHRequest[X]] extends ActionFilter[G] {
+  def legitFilter[G[X] <: GHRequest[X]] = new ActionFilter[G] {
     override protected def filter[A](request: G[A]): Future[Option[Result]] = Future {
       val user = request.gitHub.getMyself
       if (user.createdAt > DateTime.now - 3.months) Some(Forbidden(s"${user.atLogin}'s GitHub account is less than 3 months old"))
