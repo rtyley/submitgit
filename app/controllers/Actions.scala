@@ -2,9 +2,11 @@ package controllers
 
 import com.github.nscala_time.time.Imports._
 import controllers.Application._
-import lib.Email
+import lib.{PreviewSignatures, Email}
 import lib.github.Implicits._
+import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
+import play.api.libs.Crypto
 import play.api.mvc.Security.AuthenticatedBuilder
 import play.api.mvc._
 
@@ -76,6 +78,13 @@ object Actions {
       if (user.createdAt > DateTime.now - 3.months) Some(Forbidden(s"${user.atLogin}'s GitHub account is less than 3 months old"))
       else if (user.verifiedEmails.isEmpty) Some(Forbidden(s"No verified emails on ${user.atLogin}'s GitHub account"))
       else None
+    }
+  }
+
+  class VerifyCommitSignature[G[X] <: GHRequest[X]](headCommit: ObjectId, signature: String) extends ActionFilter[G] {
+    override protected def filter[A](request: G[A]): Future[Option[Result]] = Future {
+      if (Crypto.constantTimeEquals(signature, PreviewSignatures.signatureFor(headCommit))) None else
+        Some(Unauthorized("Preview signature doesn't match"))
     }
   }
 

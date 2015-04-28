@@ -3,6 +3,7 @@ Reasons why you can't send to the mailing-list, only preview:
 * You did not create the PR
 * You have not registered your email with Amazon SES
 * You have not sent a preview email?
+* We're out of SES quota
 
 Sending emails with the correct From header is hard
 

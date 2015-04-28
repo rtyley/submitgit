@@ -1,5 +1,7 @@
 @(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself)(implicit req: GHPRRequest[_])
-@import controllers.Application.MailType
+@import lib.MailType
+@import lib.PreviewSignatures
+
 @import helper._
 
 @main {
@@ -13,6 +15,13 @@
                 <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
                 #@pullRequest.getNumber @pullRequest.getTitle
             </h3>
+
+            @if(PreviewSignatures.hasPreviewed(req.pr)) {
+                <p>You've previewed these commits by test email, so you can now send them directly
+                to the mailing list.
+                </p>
+            }
+
             <table class="table">
                 <caption>Commits</caption>
                 <thead>

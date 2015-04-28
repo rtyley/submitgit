@@ -89,38 +89,10 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(req.pr, myself))
   }
 
-
-  sealed trait MailType {
-    val subjectPrefix: Option[String]
-
-    def addressing(pr: GHMyself): Email.Addresses
-
-    def footer(pr: GHPullRequest)(implicit request: RequestHeader): String
-  }
-
-  object MailType {
-    object Preview extends MailType {
-      def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = s"${routeMailPullRequest(pr).absoluteURL}"
-
-      override def addressing(user: GHMyself) = Email.Addresses(
-        from = "submitGit <submitgit@gmail.com>",
-        to = Seq(user.primaryEmail.getEmail)
-      )
-
-      override val subjectPrefix = Some("[TEST]")
-    }
-
-    object Live extends MailType {
-      override def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = pr.getHtmlUrl.toString
-
-      override def addressing(user: GHMyself) = Email.Addresses(
-        from = user.primaryEmail.getEmail,
-        to = Seq("submitgit-test@googlegroups.com"),
-        bcc = Seq(user.primaryEmail.getEmail)
-      )
-
-      override val subjectPrefix = None
-    }
+  def acknowledgePreview(repoOwner: String, repoName: String, number: Int, headCommit: ObjectId, signature: String) =
+    (githubPRAction(repoOwner, repoName, number) andThen new VerifyCommitSignature(headCommit, signature)) {
+    implicit req =>
+    Redirect(routes.Application.reviewPullRequest(repoOwner, repoName, number)).addingToSession(PreviewSignatures.signatureFor(headCommit) -> signature)
   }
 
   /**
