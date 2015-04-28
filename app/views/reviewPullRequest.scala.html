@@ -1,4 +1,5 @@
 @(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself)(implicit req: GHPRRequest[_])
+@import controllers.Application.MailType
 @import helper._
 
 @main {
@@ -34,10 +35,10 @@
                 @form(Application.routeMailPullRequest(pullRequest)) {
                     @CSRF.formField
                     <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">Test</button>
-                    @fragments.emailAddresses(req.email(true))
+                    @fragments.emailAddresses(MailType.Preview.addressing(req.user))
 
                     <button class="btn btn-primary btn-danger" value="send">Send</button>
-                    @fragments.emailAddresses(req.email(false))
+                    @fragments.emailAddresses(MailType.Live.addressing(req.user))
                 }
         </div>
     </div>

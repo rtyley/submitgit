@@ -21,6 +21,7 @@ import java.io.File
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import controllers.Actions._
+import lib.Email.Addresses
 import lib._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
@@ -88,6 +89,40 @@ object Application extends Controller {
     Ok(views.html.reviewPullRequest(req.pr, myself))
   }
 
+
+  sealed trait MailType {
+    val subjectPrefix: Option[String]
+
+    def addressing(pr: GHMyself): Email.Addresses
+
+    def footer(pr: GHPullRequest)(implicit request: RequestHeader): String
+  }
+
+  object MailType {
+    object Preview extends MailType {
+      def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = s"${routeMailPullRequest(pr).absoluteURL}"
+
+      override def addressing(user: GHMyself) = Email.Addresses(
+        from = "submitGit <submitgit@gmail.com>",
+        to = Seq(user.primaryEmail.getEmail)
+      )
+
+      override val subjectPrefix = Some("[TEST]")
+    }
+
+    object Live extends MailType {
+      override def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = pr.getHtmlUrl.toString
+
+      override def addressing(user: GHMyself) = Email.Addresses(
+        from = user.primaryEmail.getEmail,
+        to = Seq("submitgit-test@googlegroups.com"),
+        bcc = Seq(user.primaryEmail.getEmail)
+      )
+
+      override val subjectPrefix = None
+    }
+  }
+
   /**
    * Test emails: your email must be verified with GitHub and older than 1 week? Can do anyone's PR (but still restrict to only whitelisted repos?)
    * Mailing list emails: GitHub account older than 3 months & email registered with submitGit. You must have created the PR
@@ -95,12 +130,14 @@ object Application extends Controller {
   def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen new LegitFilter).async {
     implicit req =>
 
-      val addresses = req.email(selfTest = true)
+      val mailType = MailType.Preview
+
+      val addresses = mailType.addressing(req.user)
 
       def emailFor(patch: Patch)= Email(
           addresses,
-          subject = patch.subject,
-          bodyText = patch.body
+          subject = (mailType.subjectPrefix ++ Seq(patch.subject)).mkString(" "),
+          bodyText = s"${patch.body}\n---\n${mailType.footer(req.pr)}"
         )
 
       val pullRequest = req.repo.getPullRequest(number)
