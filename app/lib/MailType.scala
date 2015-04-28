@@ -1,6 +1,6 @@
 package lib
 
-import controllers.Application
+import controllers.{routes, Application}
 import org.kohsuke.github.{GHPullRequest, GHMyself}
 import play.api.mvc.RequestHeader
 import lib.github.Implicits._
@@ -15,7 +15,11 @@ sealed trait MailType {
 
 object MailType {
   object Preview extends MailType {
-    def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = s"${Application.routeMailPullRequest(pr).absoluteURL}"
+    def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = {
+      val repo = pr.getRepository
+      val headCommitId = pr.getHead.objectId
+      s"${routes.Application.acknowledgePreview(repo.getOwnerName, repo.getName, pr.getNumber, headCommitId, PreviewSignatures.signatureFor(headCommitId)).absoluteURL}"
+    }
 
     override def addressing(user: GHMyself) = Email.Addresses(
       from = "submitGit <submitgit@gmail.com>",

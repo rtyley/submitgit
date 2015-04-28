@@ -14,6 +14,6 @@ object PreviewSignatures {
 
   def hasPreviewed(pr: GHPullRequest)(implicit req: RequestHeader): Boolean = {
     val headCommit = pr.getHead.getSha.asObjectId
-    req.session.get(keyFor(headCommit)).map(sig => Crypto.constantTimeEquals(sig, signatureFor(headCommit))).getOrElse(false)
+    req.session.get(keyFor(headCommit)).exists(sig => Crypto.constantTimeEquals(sig, signatureFor(headCommit)))
   }
 }

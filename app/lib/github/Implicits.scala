@@ -23,6 +23,7 @@ import scala.collection.convert.wrapAsScala._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.{Success, Try}
+import com.madgag.git._
 
 object Implicits {
   implicit class RichFuture[S](f: Future[S]) {
@@ -57,5 +58,9 @@ object Implicits {
 
     lazy val displayName = Option(person.getName).filter(_.nonEmpty).getOrElse(atLogin)
 
+  }
+
+  implicit class RichGHCommitPointer(commitPointer: GHCommitPointer) {
+    lazy val objectId = commitPointer.getSha.asObjectId
   }
 }

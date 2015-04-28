@@ -90,9 +90,9 @@ object Application extends Controller {
   }
 
   def acknowledgePreview(repoOwner: String, repoName: String, number: Int, headCommit: ObjectId, signature: String) =
-    (githubPRAction(repoOwner, repoName, number) andThen verifyCommitSignature(headCommit, signature)) {
+    (Action andThen verifyCommitSignature(headCommit, Some(signature))) {
     implicit req =>
-    Redirect(routes.Application.reviewPullRequest(repoOwner, repoName, number)).addingToSession(PreviewSignatures.signatureFor(headCommit) -> signature)
+    Redirect(routes.Application.reviewPullRequest(repoOwner, repoName, number)).addingToSession(PreviewSignatures.keyFor(headCommit) -> signature)
   }
 
   /**

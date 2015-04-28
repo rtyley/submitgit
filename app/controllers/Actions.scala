@@ -80,11 +80,12 @@ object Actions {
       else None
     }
   }
-  
-  def verifyCommitSignature[G[X] <: GHRequest[X]](headCommit: ObjectId, signature: String) = new ActionFilter[G] {
+
+  def verifyCommitSignature[G[X] <: Request[X]](headCommit: ObjectId, signature: Option[String] = None) = new ActionFilter[G] {
     override protected def filter[A](request: G[A]): Future[Option[Result]] = Future {
-      if (Crypto.constantTimeEquals(signature, PreviewSignatures.signatureFor(headCommit))) None else
-        Some(Unauthorized("Preview signature doesn't match"))
+      val sig = signature.getOrElse(request.session(PreviewSignatures.keyFor(headCommit)))
+      if (Crypto.constantTimeEquals(sig, PreviewSignatures.signatureFor(headCommit))) None else
+        Some(Unauthorized("No valid Preview signature"))
     }
   }
 
