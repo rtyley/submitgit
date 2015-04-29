@@ -1,13 +1,12 @@
-.gh-org{
-    margin-top: 20px;
-    margin-bottom: 5px;
-    position: relative;
+pre.non-wrapping code {
+    overflow: auto;
+    word-break: normal !important;
+    word-wrap: normal !important;
+    white-space: pre !important;
 }
-
-.gh-org-btn {
-    position: absolute;
-    bottom: 0px;
-    margin-left: 5px;
+pre .long {
+    border-left: 1px dotted red;
+    color: red
 }
 
 .gw-footer {
