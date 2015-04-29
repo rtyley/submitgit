@@ -6,6 +6,7 @@ Reasons why you can't send to the mailing-list, only preview:
 * You have not sent a preview email?
 * We're out of SES quota
 * Signed off missing - need a full name?
+* The subject line is too long (can't do for whole body, some things can go long!)
 
 Sending emails with the correct From header is hard
 

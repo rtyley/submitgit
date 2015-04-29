@@ -41,7 +41,20 @@
                 </tbody>
             </table>
 
-            <pre>@pullRequest.getBody</pre>
+
+            <style>
+            pre code {
+            overflow: auto;
+            word-break: normal !important;
+            word-wrap: normal !important;
+            white-space: pre !important;
+            }
+            pre .long {
+            border-left: 1px dotted red;
+            color: red
+            }
+            </style>
+            <pre><code>@for(line <- pullRequest.getBody.lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
                 @form(Application.routeMailPullRequest(pullRequest, MailType.Preview)) {
                     @CSRF.formField
                     <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">
