@@ -19,6 +19,8 @@ lazy val root = (project in file(".")).enablePlugins(
   buildInfoPackage := "app"
 )
 
+// templatesImport += "lib._" // if we want it...
+
 routesImport ++= Seq("lib._","controllers.Binders._","org.eclipse.jgit.lib.ObjectId")
 
 libraryDependencies ++= Seq(
