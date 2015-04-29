@@ -17,9 +17,10 @@
             </h3>
 
             @if(PreviewSignatures.hasPreviewed(req.pr)) {
-                <p>You've previewed these commits by test email, so you can now send them directly
-                to the mailing list.
-                </p>
+                <div class="alert alert-info" role="alert">
+                    You've previewed these commits by test email, so you can now send them directly
+                    to the mailing list.
+                </div>
             }
 
             <table class="table">
@@ -41,11 +42,14 @@
             </table>
 
             <pre>@pullRequest.getBody</pre>
-                @form(Application.routeMailPullRequest(pullRequest)) {
+                @form(Application.routeMailPullRequest(pullRequest, MailType.Preview)) {
                     @CSRF.formField
-                    <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">Test</button>
+                    <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">
+                        Test</button>
                     @fragments.emailAddresses(MailType.Preview.addressing(req.user))
-
+                }
+                @form(Application.routeMailPullRequest(pullRequest, MailType.Live)) {
+                    @CSRF.formField
                     <button class="btn btn-primary btn-danger" value="send">Send</button>
                     @fragments.emailAddresses(MailType.Live.addressing(req.user))
                 }

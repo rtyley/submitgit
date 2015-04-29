@@ -12,7 +12,7 @@
                 <ul>
                 @for(pullRequest <- userPRs) {
                     <li>
-                        <a href="@Application.routeMailPullRequest(pullRequest)">#@pullRequest.getNumber @pullRequest.getTitle</a>
+                        <a href="@Application.routeReviewPullRequest(pullRequest)">#@pullRequest.getNumber @pullRequest.getTitle</a>
                     </li>
                 }
                 </ul>
@@ -22,7 +22,7 @@
                 <ul>
                 @for(pullRequest <- otherPRs) {
                     <li>
-                        <a href="@Application.routeMailPullRequest(pullRequest)">#@pullRequest.getNumber @pullRequest.getTitle</a>
+                        <a href="@Application.routeReviewPullRequest(pullRequest)">#@pullRequest.getNumber @pullRequest.getTitle</a>
                     </li>
                 }
                 </ul>

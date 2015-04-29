@@ -36,6 +36,7 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
+import views.html.pullRequestSent
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -78,9 +79,14 @@ object Application extends Controller {
     Ok(views.html.listPullRequests(userPRs, otherPRs))
   }
 
-  def routeMailPullRequest(pr: GHPullRequest) = {
+  def routeReviewPullRequest(pr: GHPullRequest) = {
     val repo = pr.getRepository
-    routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
+    routes.Application.reviewPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
+  }
+
+  def routeMailPullRequest(pr: GHPullRequest, mailType: MailType) = {
+    val repo = pr.getRepository
+    routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber, mailType)
   }
 
   def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = githubPRAction(repoOwner, repoName, number) { implicit req =>
@@ -99,10 +105,8 @@ object Application extends Controller {
    * Test emails: your email must be verified with GitHub and older than 1 week? Can do anyone's PR (but still restrict to only whitelisted repos?)
    * Mailing list emails: GitHub account older than 3 months & email registered with submitGit. You must have created the PR
    */
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int) = (githubPRAction(repoOwner, repoName, number) andThen legitFilter).async {
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int, mailType: MailType) = (githubPRAction(repoOwner, repoName, number) andThen legitFilter).async {
     implicit req =>
-
-      val mailType = MailType.Preview
 
       val addresses = mailType.addressing(req.user)
 
@@ -133,7 +137,7 @@ object Application extends Controller {
 
         // pullRequest.comment("Closed by submitgit")
         // pullRequest.close()
-        Ok("whatever")
+        Ok(pullRequestSent(pullRequest, req.user, mailType))
       }
   }
 

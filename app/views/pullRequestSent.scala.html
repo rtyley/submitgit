@@ -1,0 +1,24 @@
+@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, mailType: lib.MailType)(implicit req: GHPRRequest[_])
+@import lib.MailType
+@import lib.PreviewSignatures
+
+@import helper._
+
+@main {
+    <div class="row">
+        <div class="col-md-12">
+            <h2>
+                <span class="mega-octicon octicon-repo"></span>
+                <a href="@routes.Application.listPullRequests(req.repo.getOwnerName, req.repo.getName)">@req.repo.getFullName   </a>
+            </h2>
+            <h3>
+                <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
+                #@pullRequest.getNumber @pullRequest.getTitle
+            </h3>
+
+                <div class="alert alert-success" role="alert">
+                    You've successfully sent this PR as an email.
+                </div>
+       </div>
+    </div>
+}

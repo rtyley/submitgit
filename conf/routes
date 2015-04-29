@@ -6,7 +6,7 @@ GET         /                                                       controllers.
 GET         /oauth/callback                                         controllers.Application.oauthCallback(code: String)
 GET         /:repoOwner/:repoName/pulls                             controllers.Application.listPullRequests(repoOwner: String, repoName: String)
 GET         /:repoOwner/:repoName/pull/:num                         controllers.Application.reviewPullRequest(repoOwner: String, repoName: String, num: Int)
-POST        /:repoOwner/:repoName/pull/:num                         controllers.Application.mailPullRequest(repoOwner: String, repoName: String, num: Int)
+POST        /:repoOwner/:repoName/pull/:num/:submitType             controllers.Application.mailPullRequest(repoOwner: String, repoName: String, num: Int, submitType: MailType)
 GET         /:repoOwner/:repoName/pull/:num/:headCommit/:sig        controllers.Application.acknowledgePreview(repoOwner: String, repoName: String, num: Int, headCommit: ObjectId, sig: String)
 
 # Map static resources from the /public folder to the /assets URL path
