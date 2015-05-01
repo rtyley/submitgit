@@ -20,6 +20,7 @@ import java.io.File
 
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.Request.Builder
 import controllers.Actions._
 import lib.Email.Addresses
 import lib._
@@ -40,6 +41,7 @@ import views.html.pullRequestSent
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {
@@ -116,19 +118,7 @@ object Application extends Controller {
           bodyText = s"${patch.body}\n---\n${mailType.footer(req.pr)}"
         )
 
-      val pullRequest = req.repo.getPullRequest(number)
-
-      val commits = pullRequest.listCommits().toSeq
-
-      require(commits.size < 10)
-
-      val patchUrl = pullRequest.getPatchUrl.toString
-      for {
-        resp <- new OkHttpClient().execute(new okhttp.Request.Builder().url(patchUrl).build())
-      } yield {
-        val patch = resp.body.string
-
-        val commitsAndPatches = Patches.commitsAndPatches(commits.map(c => ObjectId.fromString(c.getSha)), patch)
+      for (commitsAndPatches <- req.commitsAndPatchesF) yield {
         for (initialMessageId <- ses.send(emailFor(commitsAndPatches.head._2))) {
           for ((commit, patch) <- commitsAndPatches.drop(1)) {
             ses.send(emailFor(patch).copy(headers = Seq("References" -> initialMessageId, "In-Reply-To" -> initialMessageId)))
@@ -137,9 +127,11 @@ object Application extends Controller {
 
         // pullRequest.comment("Closed by submitgit")
         // pullRequest.close()
-        Ok(pullRequestSent(pullRequest, req.user, mailType))
+        Ok(pullRequestSent(req.pr, req.user, mailType))
       }
   }
+
+
 
   lazy val gitCommitId = {
     val g = gitCommitIdFromHerokuFile

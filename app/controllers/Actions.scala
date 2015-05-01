@@ -1,22 +1,28 @@
 package controllers
 
 import com.github.nscala_time.time.Imports._
+import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.Request.Builder
 import controllers.Application._
-import lib.{PreviewSignatures, Email}
 import lib.github.Implicits._
+import lib.okhttpscala._
+import lib.{Patch, Patches, PreviewSignatures}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
 import play.api.libs.Crypto
 import play.api.mvc.Security.AuthenticatedBuilder
 import play.api.mvc._
 
-import lib.github.Implicits._
+import scala.collection.convert.wrapAll._
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
-import scala.concurrent.ExecutionContext.Implicits.global
+
 
 class GHRequest[A](val gitHub: GitHub, request: Request[A]) extends WrappedRequest[A](request) {
   val user = gitHub.getMyself
+
+  lazy val userEmail = user.primaryEmail
 }
 
 class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[A]) extends GHRequest[A](gitHub, request)
@@ -24,6 +30,18 @@ class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[
 class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
   lazy val userOwnsPR = user == pr.getUser
 
+  lazy val commitsAndPatchesF: Future[Seq[(ObjectId, Patch)]] = {
+    val commits = pr.listCommits().toSeq
+    require(commits.size < 10)
+
+    val patchUrl = pr.getPatchUrl.toString
+    for {
+      resp <- new OkHttpClient().execute(new Builder().url(patchUrl).build())
+    } yield {
+      val patch = resp.body.string
+      Patches.commitsAndPatches(commits.map(c => ObjectId.fromString(c.getSha)), patch)
+    }
+  }
 
 }
 

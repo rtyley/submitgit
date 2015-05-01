@@ -56,7 +56,9 @@ object Implicits {
 
     lazy val atLogin = s"@${person.getLogin}"
 
-    lazy val displayName = Option(person.getName).filter(_.nonEmpty).getOrElse(atLogin)
+    lazy val name = Option(person.getName)
+
+    lazy val displayName = name.filter(_.nonEmpty).getOrElse(atLogin)
 
   }
 

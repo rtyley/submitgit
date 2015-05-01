@@ -9,6 +9,11 @@ Reasons why you can't send to the mailing-list, only preview:
 * The body of the commit messages is too short??? There are some commits in Git with just a subject line and "Signed-off-by"s
 * The subject line is too long (can't do for whole body, some things can go long!)
 
+Commit warnings:
+
+* Message lines too long
+* Commit content lines too long
+
 Sending emails with the correct From header is hard
 
 1. Don't use correct From - just send as submitgit@gmail.com - update git-mailinfo in order to parse a new Authored-By header. Ensure that the author
