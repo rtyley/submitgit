@@ -1,10 +1,12 @@
 package lib
 
 import controllers.{GHPRRequest, routes}
-import lib.checks.{Check, PRChecks}
+import lib.checks.{Check, GHChecks, PRChecks}
 import lib.github.Implicits._
 import org.kohsuke.github.{GHMyself, GHPullRequest}
 import play.api.mvc.RequestHeader
+
+import com.github.nscala_time.time.Imports._
 
 sealed trait MailType {
   val slug: String
@@ -43,7 +45,7 @@ object MailType {
 
     override val subjectPrefix = Some("[TEST]")
 
-    import PRChecks._
+    import GHChecks._
     val checks = Seq(
       EmailVerified
     )
@@ -64,11 +66,13 @@ object MailType {
     override val subjectPrefix = None
     override val slug = "submit"
 
+    import GHChecks._
     import PRChecks._
 
     val checks = Seq(
       EmailVerified,
-      UserNameExists,
+      accountIsOlderThan(3.months),
+      UserHasNameSetInProfile,
       UserOwnsPR,
       PRIsOpen,
       HasBeenPreviewed

@@ -103,11 +103,8 @@ object Application extends Controller {
     Redirect(routes.Application.reviewPullRequest(repoOwner, repoName, number)).addingToSession(PreviewSignatures.keyFor(headCommit) -> signature)
   }
 
-  /**
-   * Test emails: your email must be verified with GitHub and older than 1 week? Can do anyone's PR (but still restrict to only whitelisted repos?)
-   * Mailing list emails: GitHub account older than 3 months & email registered with submitGit. You must have created the PR
-   */
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int, mailType: MailType) = (githubPRAction(repoOwner, repoName, number) andThen legitFilter).async {
+  def mailPullRequest(repoOwner: String, repoName: String, number: Int, mailType: MailType) =
+    (githubPRAction(repoOwner, repoName, number) andThen mailChecks(mailType)).async {
     implicit req =>
 
       val addresses = mailType.addressing(req.user)

@@ -6,7 +6,7 @@ import com.squareup.okhttp.Request.Builder
 import controllers.Application._
 import lib.github.Implicits._
 import lib.okhttpscala._
-import lib.{Patch, Patches, PreviewSignatures}
+import lib.{MailType, Patch, Patches, PreviewSignatures}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
 import play.api.libs.Crypto
@@ -90,15 +90,6 @@ object Actions {
     }
   }
 
-  val EnsureSeemsLegit = new ActionFilter[GHRequest] {
-    override protected def filter[A](request: GHRequest[A]): Future[Option[Result]] = Future {
-      val user = request.gitHub.getMyself
-      if (user.createdAt > DateTime.now - 3.months) Some(Forbidden(s"${user.atLogin}'s GitHub account is less than 3 months old"))
-      else if (user.verifiedEmails.isEmpty) Some(Forbidden(s"No verified emails on ${user.atLogin}'s GitHub account"))
-      else None
-    }
-  }
-
   def verifyCommitSignature[G[X] <: Request[X]](headCommit: ObjectId, signature: Option[String] = None) = new ActionFilter[G] {
     override protected def filter[A](request: G[A]): Future[Option[Result]] = Future {
       val sig = signature.getOrElse(request.session(PreviewSignatures.keyFor(headCommit)))
@@ -107,12 +98,12 @@ object Actions {
     }
   }
 
-  def legitFilter[G[X] <: GHRequest[X]] = new ActionFilter[G] {
-    override protected def filter[A](request: G[A]): Future[Option[Result]] = Future {
-      val user = request.gitHub.getMyself
-      if (user.createdAt > DateTime.now - 3.months) Some(Forbidden(s"${user.atLogin}'s GitHub account is less than 3 months old"))
-      else if (user.verifiedEmails.isEmpty) Some(Forbidden(s"No verified emails on ${user.atLogin}'s GitHub account"))
-      else None
+  def mailChecks(mailType: MailType) = new ActionFilter[GHPRRequest] {
+    override protected def filter[A](req: GHPRRequest[A]): Future[Option[Result]] = {
+      for (checkResults <- Future.traverse(mailType.checks)(_.check(req))) yield {
+        val errors = checkResults.flatten.toList
+        if (errors.isEmpty) None else Some(Forbidden(errors.mkString("\n")))
+      }
     }
   }
 
