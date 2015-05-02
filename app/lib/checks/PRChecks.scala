@@ -28,7 +28,7 @@ object GHChecks extends Checks[GHRequest[_]] {
   val UserHasNameSetInProfile = check(_.user.name.exists(_.length > 1)) or
     "Set a Name in your GitHub profile - it'll be used as a display name next to your email"
 
-  def accountIsOlderThan(period: Period) = check(_.user.createdAt > DateTime.now - period) or
+  def accountIsOlderThan(period: Period) = check(_.user.createdAt < DateTime.now - period) or
     s"To prevent spam, we don't currently allow GitHub accounts less than ${period.pretty} old - get in touch if that's a problem for you!"
 
 }
