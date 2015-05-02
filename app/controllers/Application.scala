@@ -18,19 +18,12 @@ package controllers
 
 import java.io.File
 
-import com.squareup.okhttp
-import com.squareup.okhttp.OkHttpClient
-import com.squareup.okhttp.Request.Builder
 import controllers.Actions._
-import lib.Email.Addresses
 import lib.MailType.errorsByMailTypeFor
 import lib._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
-import lib.checks.Check
 import lib.github.GitHubAuthResponse
-import lib.github.Implicits._
-import lib.okhttpscala._
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -43,7 +36,6 @@ import views.html.pullRequestSent
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {

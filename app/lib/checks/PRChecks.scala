@@ -10,8 +10,6 @@ import org.joda.time.Period
 import org.joda.time.format.PeriodFormat
 import org.kohsuke.github.GHIssueState
 
-import com.github.nscala_time.time.Imports._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object GHChecks extends Checks[GHRequest[_]] {
@@ -39,7 +37,7 @@ object PRChecks extends Checks[GHPRRequest[_]] {
 
   val PRIsOpen = check(_.pr.getState == GHIssueState.OPEN) or "Can't submit a closed pull request - reopen it if you're sure"
 
-  val HasBeenPreviewed = check(req => PreviewSignatures.hasPreviewed(req.pr)(req)) or (req => s"You need to preview these commits in a test email to yourself first - click the link at the bottom of the email!")
+  val HasBeenPreviewed = check(req => PreviewSignatures.hasPreviewed(req.pr)(req)) or (req => s"You need to preview these commits in a test email to yourself first - click the link at the bottom of the preview email!")
 
 
   def checkForSubmission(req: GHPRRequest[_]) = {

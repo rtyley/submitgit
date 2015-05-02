@@ -1,10 +1,10 @@
 package lib
 
+import com.madgag.git._
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github.GHPullRequest
 import play.api.libs.Crypto
 import play.api.mvc.RequestHeader
-import com.madgag.git._
 
 
 object PreviewSignatures {

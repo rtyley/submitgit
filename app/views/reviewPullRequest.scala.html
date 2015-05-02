@@ -1,8 +1,5 @@
 @(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, errorsByMailType: Map[lib.MailType,Seq[String]])(implicit req: GHPRRequest[_])
-@import lib.MailType
-@import lib.PreviewSignatures
-
-@import helper._
+@import lib.{MailType, PreviewSignatures}
 
 @main {
     <div class="row">

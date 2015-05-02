@@ -17,13 +17,13 @@
 package lib.github
 
 import com.github.nscala_time.time.Imports._
+import com.madgag.git._
 import org.kohsuke.github._
 
 import scala.collection.convert.wrapAsScala._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.util.{Success, Try}
-import com.madgag.git._
 
 object Implicits {
   implicit class RichFuture[S](f: Future[S]) {
