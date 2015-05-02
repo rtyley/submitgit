@@ -1,12 +1,14 @@
 package lib
 
+import com.github.nscala_time.time.Imports._
 import controllers.{GHPRRequest, routes}
 import lib.checks.{Check, GHChecks, PRChecks}
 import lib.github.Implicits._
 import org.kohsuke.github.{GHMyself, GHPullRequest}
 import play.api.mvc.RequestHeader
 
-import com.github.nscala_time.time.Imports._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 sealed trait MailType {
   val slug: String
@@ -27,6 +29,9 @@ object MailType {
   val all = Seq(Preview, Live)
 
   val bySlug = all.map(mt => mt.slug -> mt).toMap
+
+  def errorsByMailTypeFor(req: GHPRRequest[_]): Future[Map[MailType,Seq[String]]] =
+    Future.traverse(MailType.all)(mt => Check.all(req, mt.checks).map(errors => mt -> errors)).map(_.toMap)
 
   object Preview extends MailType {
     override val slug = "submit-preview"
@@ -69,10 +74,13 @@ object MailType {
     import GHChecks._
     import PRChecks._
 
-    val checks = Seq(
+    val generalChecks = Seq(
       EmailVerified,
-      accountIsOlderThan(3.months),
-      UserHasNameSetInProfile,
+      accountIsOlderThan(1.month),
+      UserHasNameSetInProfile
+    )
+
+    val checks = generalChecks ++ Seq(
       UserOwnsPR,
       PRIsOpen,
       HasBeenPreviewed

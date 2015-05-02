@@ -23,9 +23,11 @@ import com.squareup.okhttp.OkHttpClient
 import com.squareup.okhttp.Request.Builder
 import controllers.Actions._
 import lib.Email.Addresses
+import lib.MailType.errorsByMailTypeFor
 import lib._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
+import lib.checks.Check
 import lib.github.GitHubAuthResponse
 import lib.github.Implicits._
 import lib.okhttpscala._
@@ -91,10 +93,12 @@ object Application extends Controller {
     routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber, mailType)
   }
 
-  def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = githubPRAction(repoOwner, repoName, number) { implicit req =>
+  def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = githubPRAction(repoOwner, repoName, number).async { implicit req =>
     val myself = req.gitHub.getMyself
 
-    Ok(views.html.reviewPullRequest(req.pr, myself))
+    for (errorsByMailType <- errorsByMailTypeFor(req)) yield {
+      Ok(views.html.reviewPullRequest(req.pr, myself, errorsByMailType))
+    }
   }
 
   def acknowledgePreview(repoOwner: String, repoName: String, number: Int, headCommit: ObjectId, signature: String) =

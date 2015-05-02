@@ -1,4 +1,4 @@
-@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself)(implicit req: GHPRRequest[_])
+@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, errorsByMailType: Map[lib.MailType,Seq[String]])(implicit req: GHPRRequest[_])
 @import lib.MailType
 @import lib.PreviewSignatures
 
@@ -9,7 +9,7 @@
         <div class="col-md-12">
             <h2>
                 <span class="mega-octicon octicon-repo"></span>
-                <a href="@routes.Application.listPullRequests(req.repo.getOwnerName, req.repo.getName)">@req.repo.getFullName   </a>
+                <a href="@routes.Application.listPullRequests(req.repo.getOwnerName, req.repo.getName)">@req.repo.getFullName</a>
             </h2>
             <h3>
                 <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
@@ -41,17 +41,9 @@
                 </tbody>
             </table>
             <pre class="non-wrapping"><code>@for(line <- pullRequest.getBody.lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
-                @form(Application.routeMailPullRequest(pullRequest, MailType.Preview)) {
-                    @CSRF.formField
-                    <button class="btn btn-primary" value="sendTest" title="Email will be sent only to your account">
-                        Test</button>
-                    @fragments.emailAddresses(MailType.Preview.addressing(req.user))
-                }
-                @form(Application.routeMailPullRequest(pullRequest, MailType.Live)) {
-                    @CSRF.formField
-                    <button class="btn btn-primary btn-danger" value="send">Send</button>
-                    @fragments.emailAddresses(MailType.Live.addressing(req.user))
-                }
+
+            @fragments.send(MailType.Preview, pullRequest,errorsByMailType(MailType.Preview))(req)
+            @fragments.send(MailType.Live, pullRequest, errorsByMailType(MailType.Live))(req)
         </div>
     </div>
 }

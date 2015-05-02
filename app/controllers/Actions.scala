@@ -1,9 +1,9 @@
 package controllers
 
-import com.github.nscala_time.time.Imports._
 import com.squareup.okhttp.OkHttpClient
 import com.squareup.okhttp.Request.Builder
 import controllers.Application._
+import lib.checks.Check
 import lib.github.Implicits._
 import lib.okhttpscala._
 import lib.{MailType, Patch, Patches, PreviewSignatures}
@@ -99,12 +99,9 @@ object Actions {
   }
 
   def mailChecks(mailType: MailType) = new ActionFilter[GHPRRequest] {
-    override protected def filter[A](req: GHPRRequest[A]): Future[Option[Result]] = {
-      for (checkResults <- Future.traverse(mailType.checks)(_.check(req))) yield {
-        val errors = checkResults.flatten.toList
-        if (errors.isEmpty) None else Some(Forbidden(errors.mkString("\n")))
-      }
-    }
+    override protected def filter[A](req: GHPRRequest[A]): Future[Option[Result]] = for {
+      errors <- Check.all(req, mailType.checks)
+    } yield if (errors.isEmpty) None else Some(Forbidden(errors.mkString("\n")))
   }
 
 }
