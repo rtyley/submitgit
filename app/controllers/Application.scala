@@ -23,7 +23,7 @@ import lib.MailType.errorsByMailTypeFor
 import lib._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
-import lib.github.GitHubAuthResponse
+import lib.github.{GitHubAuthResponse, PullRequestId, RepoName}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -63,11 +63,11 @@ object Application extends Controller {
   def oauthCallback(code: String) = Action.async {
     for (response <- bareAccessTokenRequest.withQueryString("code" -> code).post("")) yield {
       val accessToken = response.json.validate[GitHubAuthResponse].get.access_token
-      Redirect(routes.Application.listPullRequests("git","git")).withSession(AccessTokenSessionKey -> accessToken)
+      Redirect(routes.Application.listPullRequests(RepoName("git","git"))).withSession(AccessTokenSessionKey -> accessToken)
     }
   }
 
-  def listPullRequests(repoOwner: String, repoName: String) = githubRepoAction(repoOwner, repoName) { implicit req =>
+  def listPullRequests(repoId: RepoName) = githubRepoAction(repoId) { implicit req =>
     val myself = req.gitHub.getMyself
     val openPRs = req.repo.getPullRequests(GHIssueState.OPEN)
     val (userPRs, otherPRs) = openPRs.partition(_.getUser.equals(myself))
@@ -75,17 +75,7 @@ object Application extends Controller {
     Ok(views.html.listPullRequests(userPRs, otherPRs))
   }
 
-  def routeReviewPullRequest(pr: GHPullRequest) = {
-    val repo = pr.getRepository
-    routes.Application.reviewPullRequest(repo.getOwnerName, repo.getName, pr.getNumber)
-  }
-
-  def routeMailPullRequest(pr: GHPullRequest, mailType: MailType) = {
-    val repo = pr.getRepository
-    routes.Application.mailPullRequest(repo.getOwnerName, repo.getName, pr.getNumber, mailType)
-  }
-
-  def reviewPullRequest(repoOwner: String, repoName: String, number: Int) = githubPRAction(repoOwner, repoName, number).async { implicit req =>
+  def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
     val myself = req.gitHub.getMyself
 
     for (errorsByMailType <- errorsByMailTypeFor(req)) yield {
@@ -93,14 +83,13 @@ object Application extends Controller {
     }
   }
 
-  def acknowledgePreview(repoOwner: String, repoName: String, number: Int, headCommit: ObjectId, signature: String) =
+  def acknowledgePreview(prId: PullRequestId, headCommit: ObjectId, signature: String) =
     (Action andThen verifyCommitSignature(headCommit, Some(signature))) {
     implicit req =>
-    Redirect(routes.Application.reviewPullRequest(repoOwner, repoName, number)).addingToSession(PreviewSignatures.keyFor(headCommit) -> signature)
+    Redirect(routes.Application.reviewPullRequest(prId)).addingToSession(PreviewSignatures.keyFor(headCommit) -> signature)
   }
 
-  def mailPullRequest(repoOwner: String, repoName: String, number: Int, mailType: MailType) =
-    (githubPRAction(repoOwner, repoName, number) andThen mailChecks(mailType)).async {
+  def mailPullRequest(prId: PullRequestId, mailType: MailType) = (githubPRAction(prId) andThen mailChecks(mailType)).async {
     implicit req =>
 
       val addresses = mailType.addressing(req.user)
@@ -123,8 +112,6 @@ object Application extends Controller {
         Ok(pullRequestSent(req.pr, req.user, mailType))
       }
   }
-
-
 
   lazy val gitCommitId = {
     val g = gitCommitIdFromHerokuFile

@@ -5,7 +5,7 @@
         <div class="col-md-12">
             <h2>
                 <span class="mega-octicon octicon-repo"></span>
-                <a href="@routes.Application.listPullRequests(req.repo.getOwnerName, req.repo.getName)">@req.repo.getFullName   </a>
+                <a href="@routes.Application.listPullRequests(req.repo.id)">@req.repo.getFullName</a>
             </h2>
             <h3>
                 <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>

@@ -2,12 +2,13 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET         /                                                       controllers.Application.index()
-GET         /oauth/callback                                         controllers.Application.oauthCallback(code: String)
-GET         /:repoOwner/:repoName/pulls                             controllers.Application.listPullRequests(repoOwner: String, repoName: String)
-GET         /:repoOwner/:repoName/pull/:num                         controllers.Application.reviewPullRequest(repoOwner: String, repoName: String, num: Int)
-POST        /:repoOwner/:repoName/pull/:num/:submitType             controllers.Application.mailPullRequest(repoOwner: String, repoName: String, num: Int, submitType: MailType)
-GET         /:repoOwner/:repoName/pull/:num/:headCommit/:sig        controllers.Application.acknowledgePreview(repoOwner: String, repoName: String, num: Int, headCommit: ObjectId, sig: String)
+GET         /                                             controllers.Application.index()
+GET         /oauth/callback                               controllers.Application.oauthCallback(code: String)
+GET         /$repoId<.*/.*>/pulls                         controllers.Application.listPullRequests(repoId: lib.github.RepoName)
+GET         /$prId<.*/.*/pull/.*>                         controllers.Application.reviewPullRequest(prId: PullRequestId)
+POST        /$prId<.*/.*/pull/.*>/:submitType             controllers.Application.mailPullRequest(prId: PullRequestId, submitType: MailType)
+GET         /$prId<.*/.*/pull/.*>/:headCommit/:sig        controllers.Application.acknowledgePreview(prId: PullRequestId, headCommit: ObjectId, sig: String)
+
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                           controllers.Assets.at(path="/public", file)
+GET         /assets/*file                                 controllers.Assets.at(path="/public", file)

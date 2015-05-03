@@ -19,9 +19,9 @@ lazy val root = (project in file(".")).enablePlugins(
   buildInfoPackage := "app"
 )
 
-// templatesImport += "lib._" // if we want it...
+TwirlKeys.templateImports += "lib.github.Implicits._" // if we want it...
 
-routesImport ++= Seq("lib._","controllers.Binders._","org.eclipse.jgit.lib.ObjectId")
+routesImport ++= Seq("lib._","lib.github._","controllers.Binders._","org.eclipse.jgit.lib.ObjectId")
 
 libraryDependencies ++= Seq(
   cache,

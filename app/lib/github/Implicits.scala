@@ -48,6 +48,15 @@ object Implicits {
     lazy val labelNames = issue.getLabels.map(_.getName)
   }
 
+  implicit class RichRepository(repo: GHRepository) {
+    lazy val id = RepoName(repo.getOwnerName, repo.getName)
+  }
+
+  implicit class RichPullRequest(pr: GHPullRequest) {
+    lazy val id = PullRequestId(pr.getRepository.id, pr.getNumber)
+  }
+
+
   // val dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ")
 
   implicit class RichPerson(person: GHPerson) {

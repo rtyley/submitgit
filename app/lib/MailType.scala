@@ -39,7 +39,7 @@ object MailType {
     def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = {
       val repo = pr.getRepository
       val headCommitId = pr.getHead.objectId
-      val ackUrl = routes.Application.acknowledgePreview(repo.getOwnerName, repo.getName, pr.getNumber, headCommitId, PreviewSignatures.signatureFor(headCommitId)).absoluteURL
+      val ackUrl = routes.Application.acknowledgePreview(pr.id, headCommitId, PreviewSignatures.signatureFor(headCommitId)).absoluteURL
       s"Click here to confirm you've previewed this submission:\n$ackUrl"
     }
 

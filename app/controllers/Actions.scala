@@ -5,6 +5,7 @@ import com.squareup.okhttp.Request.Builder
 import controllers.Application._
 import lib.checks.Check
 import lib.github.Implicits._
+import lib.github.{PullRequestId, RepoName}
 import lib.okhttpscala._
 import lib.{MailType, Patch, Patches, PreviewSignatures}
 import org.eclipse.jgit.lib.ObjectId
@@ -63,21 +64,20 @@ object Actions {
   }
 
 
-  def githubRepoAction(repoOwner: String, repoName: String) = githubAction() andThen new ActionRefiner[GHRequest, GHRepoRequest] {
+  def githubRepoAction(repoId: RepoName) = githubAction() andThen new ActionRefiner[GHRequest, GHRepoRequest] {
     override protected def refine[A](request: GHRequest[A]): Future[Either[Result, GHRepoRequest[A]]] = Future {
-      val repoFullName = s"$repoOwner/$repoName"
-      Either.cond(repoWhiteList(repoFullName), {
+      Either.cond(repoWhiteList(repoId.fullName), {
         val gitHub = request.gitHub
-        val repo = gitHub.getRepository(repoFullName)
+        val repo = gitHub.getRepository(repoId.fullName)
         new GHRepoRequest(gitHub, repo, request)}, Forbidden("Not a supported repo"))
     }
   }
 
-  def githubPRAction(repoOwner: String, repoName: String, num: Int) = githubRepoAction(repoOwner, repoName) andThen new ActionRefiner[GHRepoRequest, GHPRRequest] {
+  def githubPRAction(prId: PullRequestId) = githubRepoAction(prId.repoName) andThen new ActionRefiner[GHRepoRequest, GHPRRequest] {
     override protected def refine[A](request: GHRepoRequest[A]): Future[Either[Result, GHPRRequest[A]]] = Future {
-      Try(request.repo.getPullRequest(num)) match {
+      Try(request.repo.getPullRequest(prId.num)) match {
         case Success(pr) => Right(new GHPRRequest[A](request.gitHub, pr, request))
-        case Failure(e) => Left(NotFound(s"${request.repo.getFullName} doesn't seem to have PR #$num"))
+        case Failure(e) => Left(NotFound(s"${request.repo.getFullName} doesn't seem to have PR #${prId.num}"))
       }
     }
   }
