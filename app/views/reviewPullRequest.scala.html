@@ -31,7 +31,7 @@
                 <tbody>
                     @for(commit <- pullRequest.listCommits()) {
                         <tr>
-                            <th scope="row"><code><a href="@commit.getUrl">@commit.getSha.take(8)</a></th>
+                            <th scope="row"><code><a href="@commit.getUrl">@commit.getSha.take(8)</a></code></th>
                             <td><code>@commit.getCommit.getMessage.lines.take(1)</code></td>
                         </tr>
                     }
