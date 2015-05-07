@@ -1,12 +1,13 @@
-@(mailType: lib.MailType, pr: org.kohsuke.github.GHPullRequest, errors: Seq[String])(implicit req: GHPRRequest[_])
+@(mailType: lib.MailType, pr: org.kohsuke.github.GHPullRequest, proposedMail: lib.ProposedMail)(implicit req: GHPRRequest[_])
 @import helper._
+@import lib.github.Implicits._
 
 @form(routes.Application.mailPullRequest(pr.id, mailType)) {
     @CSRF.formField
     <button class="btn btn-primary" value="send">Send</button>
-    @fragments.emailAddresses(mailType.addressing(req.user))
+    @fragments.emailAddresses(proposedMail.addresses)
     <ul>
-        @for(error <- errors) {
+        @for(error <- proposedMail.errors) {
             <li>@error</li>
         }
     </ul>

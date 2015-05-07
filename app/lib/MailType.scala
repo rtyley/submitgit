@@ -30,8 +30,12 @@ object MailType {
 
   val bySlug = all.map(mt => mt.slug -> mt).toMap
 
-  def errorsByMailTypeFor(req: GHPRRequest[_]): Future[Map[MailType,Seq[String]]] =
-    Future.traverse(MailType.all)(mt => Check.all(req, mt.checks).map(errors => mt -> errors)).map(_.toMap)
+  def proposedMailFor(mt: MailType)(implicit req: GHPRRequest[_]): Future[ProposedMail] = for {
+    errors <- Check.all(req, mt.checks)
+  } yield ProposedMail(mt.addressing(req.user), errors)
+
+  def proposedMailByTypeFor(implicit req: GHPRRequest[_]): Future[Map[MailType, ProposedMail]] =
+    Future.traverse(MailType.all)(mt => proposedMailFor(mt).map(mt -> _)).map(_.toMap)
 
   object Preview extends MailType {
     override val slug = "submit-preview"

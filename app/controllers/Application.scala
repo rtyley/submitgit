@@ -19,7 +19,7 @@ package controllers
 import java.io.File
 
 import controllers.Actions._
-import lib.MailType.errorsByMailTypeFor
+import lib.MailType.proposedMailByTypeFor
 import lib._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
@@ -60,10 +60,12 @@ object Application extends Controller {
       .withHeaders(("Accept", "application/json"))
   }
 
+  val redirectToGitRepo: Result = Redirect(routes.Application.listPullRequests(RepoName("git", "git")))
+
   def oauthCallback(code: String) = Action.async {
     for (response <- bareAccessTokenRequest.withQueryString("code" -> code).post("")) yield {
       val accessToken = response.json.validate[GitHubAuthResponse].get.access_token
-      Redirect(routes.Application.listPullRequests(RepoName("git","git"))).withSession(AccessTokenSessionKey -> accessToken)
+      redirectToGitRepo.withSession(AccessTokenSessionKey -> accessToken)
     }
   }
 
@@ -78,8 +80,8 @@ object Application extends Controller {
   def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
     val myself = req.gitHub.getMyself
 
-    for (errorsByMailType <- errorsByMailTypeFor(req)) yield {
-      Ok(views.html.reviewPullRequest(req.pr, myself, errorsByMailType))
+    for (proposedMailByType <- proposedMailByTypeFor(req)) yield {
+      Ok(views.html.reviewPullRequest(req.pr, myself, proposedMailByType))
     }
   }
 
