@@ -44,7 +44,7 @@ object MailType {
       val repo = pr.getRepository
       val headCommitId = pr.getHead.objectId
       val ackUrl = routes.Application.acknowledgePreview(pr.id, headCommitId, PreviewSignatures.signatureFor(headCommitId)).absoluteURL
-      s"Click here to confirm you've previewed this submission:\n$ackUrl"
+      s"This is a preview - if you want to send this message for real, click here:\n$ackUrl"
     }
 
     override def addressing(user: GHMyself) = Email.Addresses(
@@ -81,7 +81,8 @@ object MailType {
     val generalChecks = Seq(
       EmailVerified,
       accountIsOlderThan(1.month),
-      UserHasNameSetInProfile
+      UserHasNameSetInProfile,
+      RegisteredEmailWithSES
     )
 
     val checks = generalChecks ++ Seq(

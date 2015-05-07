@@ -29,6 +29,9 @@ object GHChecks extends Checks[GHRequest[_]] {
   def accountIsOlderThan(period: Period) = check(_.user.createdAt < DateTime.now - period) or
     s"To prevent spam, we don't currently allow GitHub accounts less than ${period.pretty} old - get in touch if that's a problem for you!"
 
+  val RegisteredEmailWithSES = checkAsync(req => ses.getIdentityVerificationStatusFor(req.userEmail.getEmail).map(_.contains("Success"))) or
+    (req => s"Register your email address (${req.userEmail.getEmail}) with submitGit's Amazon SES account in order for it to send emails from you.")
+
 }
 
 object PRChecks extends Checks[GHPRRequest[_]] {
@@ -37,7 +40,7 @@ object PRChecks extends Checks[GHPRRequest[_]] {
 
   val PRIsOpen = check(_.pr.getState == GHIssueState.OPEN) or "Can't submit a closed pull request - reopen it if you're sure"
 
-  val HasBeenPreviewed = check(req => PreviewSignatures.hasPreviewed(req.pr)(req)) or (req => s"You need to preview these commits in a test email to yourself first - click the link at the bottom of the preview email!")
+  val HasBeenPreviewed = check(req => PreviewSignatures.hasPreviewed(req.pr)(req)) or (req => s"You need to preview these commits in a test email to yourself before they can be sent for real - click the link at the bottom of the preview email!")
 
 
   def checkForSubmission(req: GHPRRequest[_]) = {
@@ -58,9 +61,6 @@ object PRChecks extends Checks[GHPRRequest[_]] {
       for ((commit, patch) <- commitsAndPatches) {
         assert(patch.subject.length > 10 && patch.subject.length < 72)
       }
-    }
-    for (verificationStatus <- ses.getIdentityVerificationStatusFor(req.user.primaryEmail.getEmail)) {
-      assert(verificationStatus == "Success")
     }
   }
 }

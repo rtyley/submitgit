@@ -44,10 +44,10 @@ object SesAsyncHelpers {
     def getIdentityVerificationAttributesFuture(req: GetIdentityVerificationAttributesRequest): Future[GetIdentityVerificationAttributesResult] =
       invoke(ses.getIdentityVerificationAttributesAsync, req)
 
-    def getIdentityVerificationStatusFor(email: String)(implicit ec: ExecutionContext) = {
+    def getIdentityVerificationStatusFor(email: String)(implicit ec: ExecutionContext): Future[Option[String]] = {
       var idReq = new GetIdentityVerificationAttributesRequest().withIdentities(email)
       for (res <- ses.getIdentityVerificationAttributesFuture(idReq)) yield
-        res.getVerificationAttributes.get(email).getVerificationStatus
+        res.getVerificationAttributes.toMap.get(email).map(_.getVerificationStatus)
     }
 
     def sendRawEmailFuture(req: SendRawEmailRequest): Future[SendRawEmailResult] =

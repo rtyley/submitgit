@@ -29,7 +29,7 @@ object EmailRegistration extends Controller {
     githubAction() andThen ensureGitHubVerified(email)
 
   def isRegisteredEmail(email: String) = gitHubUserWithVerified(email).async {
-    for (status <- ses.getIdentityVerificationStatusFor(email)) yield Ok(status)
+    for (status <- ses.getIdentityVerificationStatusFor(email)) yield Ok(status.getOrElse("Unknown"))
   }
 
   def registerEmail(email: String) = gitHubUserWithVerified(email).async {
