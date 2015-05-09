@@ -39,8 +39,11 @@
             </table>
             <pre class="non-wrapping"><code>@for(line <- pullRequest.getBody.lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
 
-            @fragments.send(MailType.Preview, pullRequest, proposedMailByType(MailType.Preview))(req)
-            @fragments.send(MailType.Live, pullRequest, proposedMailByType(MailType.Live))(req)
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    @fragments.sendTabs(req.defaultMailType, proposedMailByType)
+                </div>
+            </div>
         </div>
     </div>
 }

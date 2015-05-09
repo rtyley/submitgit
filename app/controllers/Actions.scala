@@ -44,6 +44,9 @@ class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A])
     }
   }
 
+  lazy val hasBeenPreviewed = PreviewSignatures.hasPreviewed(pr)(request)
+
+  lazy val defaultMailType = if (hasBeenPreviewed) MailType.Live else MailType.Preview
 }
 
 object Actions {

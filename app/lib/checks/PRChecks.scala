@@ -40,7 +40,7 @@ object PRChecks extends Checks[GHPRRequest[_]] {
 
   val PRIsOpen = check(_.pr.getState == GHIssueState.OPEN) or "Can't submit a closed pull request - reopen it if you're sure"
 
-  val HasBeenPreviewed = check(req => PreviewSignatures.hasPreviewed(req.pr)(req)) or (req => s"You need to preview these commits in a test email to yourself before they can be sent for real - click the link at the bottom of the preview email!")
+  val HasBeenPreviewed = check(_.hasBeenPreviewed) or (req => s"You need to preview these commits in a test email to yourself before they can be sent for real - click the link at the bottom of the preview email!")
 
 
   def checkForSubmission(req: GHPRRequest[_]) = {

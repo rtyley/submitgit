@@ -1,0 +1,19 @@
+@(defaultMailTab: lib.MailType, proposedMailByType: Map[lib.MailType,lib.ProposedMail])(implicit req: GHPRRequest[_])
+@import lib.MailType
+
+<div role="tabpanel">
+    <ul class="nav nav-tabs">
+        @for(mt <- MailType.all) {
+            <li role="presentation" @if(mt == defaultMailTab) { class="active" }><a
+            href="#mail-@mt.slug" aria-controls="mail-@mt.slug" role="tab" data-toggle="tab">@mt.getClass.getSimpleName ...</a></li>
+        }
+    </ul>
+    <div class="tab-content">
+        @for(mt <- MailType.all) {
+            <div role="tabpanel" class="tab-pane @if(mt == defaultMailTab) { fade in active }" id="mail-@mt.slug">
+                @fragments.send(mt, req.pr, proposedMailByType(mt))(req)
+            </div>
+        }
+    </div>
+
+</div>
