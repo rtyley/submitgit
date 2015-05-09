@@ -1,0 +1,4 @@
+@(mailType: lib.MailType, isDefault: Boolean)(content: Html)
+
+<li role="presentation" @if(isDefault) { class="active" }><a
+href="#mail-@mailType.slug" aria-controls="mail-@mailType.slug" role="tab" data-toggle="tab">@content</a></li>

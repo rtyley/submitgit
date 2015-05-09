@@ -1,7 +1,9 @@
-@(mailType: lib.MailType, pr: org.kohsuke.github.GHPullRequest, proposedMail: lib.ProposedMail)(implicit req: GHPRRequest[_])
+@(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean)(implicit req: GHPRRequest[_])
 @import helper._
 @import lib.github.Implicits._
 
+
+<div role="tabpanel" class="tab-pane @if(isDefault) { fade in active }" id="mail-@mailType.slug">
 @fragments.emailAddresses(proposedMail.addresses)
 @if(proposedMail.errors.nonEmpty) {
     <div class="alert alert-warning" role="alert">
@@ -13,7 +15,7 @@
     </div>
 }
 
-@form(routes.Application.mailPullRequest(pr.id, mailType)) {
+@form(routes.Application.mailPullRequest(req.pr.id, mailType)) {
     @CSRF.formField
     <button
     class="btn btn-primary"
@@ -21,3 +23,4 @@
     @if(proposedMail.errors.nonEmpty) { disabled="disabled" }
     >Send</button>
 }
+</div>
