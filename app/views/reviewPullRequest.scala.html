@@ -13,12 +13,7 @@
                 #@pullRequest.getNumber @pullRequest.getTitle
             </h3>
 
-            @if(PreviewSignatures.hasPreviewed(req.pr)) {
-                <div class="alert alert-info" role="alert">
-                    You've previewed these commits by test email, so you can now send them directly
-                    to the mailing list.
-                </div>
-            }
+            @fragments.sendTabs(req.defaultMailType, proposedMailByType)
 
             <table class="table">
                 <caption>Commits</caption>
@@ -39,11 +34,6 @@
             </table>
             <pre class="non-wrapping"><code>@for(line <- pullRequest.getBody.lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
 
-            <div class="panel panel-default">
-                <div class="panel-body">
-                    @fragments.sendTabs(req.defaultMailType, proposedMailByType)
-                </div>
-            </div>
         </div>
     </div>
 }

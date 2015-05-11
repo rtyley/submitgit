@@ -1,4 +1,4 @@
-@(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean)(implicit req: GHPRRequest[_])
+@(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String)(implicit req: GHPRRequest[_])
 @import helper._
 @import lib.github.Implicits._
 
@@ -18,7 +18,7 @@
 @form(routes.Application.mailPullRequest(req.pr.id, mailType)) {
     @CSRF.formField
     <button
-    class="btn btn-primary"
+    class="btn @btnClass btn-lg"
     value="send"
     @if(proposedMail.errors.nonEmpty) { disabled="disabled" }
     >Send</button>

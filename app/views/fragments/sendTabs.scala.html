@@ -2,14 +2,15 @@
 @import lib.MailType
 @import MailType.{Live, Preview}
 
-<div role="tabpanel">
-    <ul class="nav nav-tabs">
-        @fragments.sendTab(Preview, Preview == defaultMailTab) { To You... (Preview) }
-        @fragments.sendTab(Live, Live == defaultMailTab) { To the Mailing List... }
-    </ul>
-    <div class="tab-content">
-        @for(mt <- MailType.all) {
-            @fragments.sendTabContent(mt, proposedMailByType(mt), mt == defaultMailTab)
-        }
+<h3 class="panel-title">Send this Pull Request!</h3>
+    <div class="send-tabs" role="tabpanel">
+            <ul class="nav nav-tabs nav-justified">
+                @fragments.sendTab(Preview, Preview == defaultMailTab) { To You... <i>(preview)</i> <img src="@req.user.getAvatarUrl&s=20" alt="...">   }
+                @fragments.sendTab(Live, Live == defaultMailTab) { To the Mailing List... <img src="@routes.Assets.at("images/git-logo.png")" height="20" width="20" alt="..."> }
+            </ul>
+            <div class="tab-content">
+                @fragments.sendTabContent(Preview, proposedMailByType(Preview), Preview == defaultMailTab,"btn-primary")
+                @fragments.sendTabContent(Live, proposedMailByType(Live), Live == defaultMailTab,"btn-danger")
+            </div>
     </div>
-</div>
+
