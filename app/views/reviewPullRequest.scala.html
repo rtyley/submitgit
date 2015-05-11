@@ -3,7 +3,7 @@
 
 @main {
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-7">
             <h2>
                 <span class="mega-octicon octicon-repo"></span>
                 <a href="@routes.Application.listPullRequests(req.repo.id)">@req.repo.getFullName</a>
@@ -12,8 +12,6 @@
                 <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
                 #@pullRequest.getNumber @pullRequest.getTitle
             </h3>
-
-            @fragments.sendTabs(req.defaultMailType, proposedMailByType)
 
             <table class="table">
                 <caption>Commits</caption>
@@ -34,6 +32,9 @@
             </table>
             <pre class="non-wrapping"><code>@for(line <- pullRequest.getBody.lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
 
+        </div>
+        <div class="col-md-5">
+            @fragments.sendTabs(req.defaultMailType, proposedMailByType)
         </div>
     </div>
 }
