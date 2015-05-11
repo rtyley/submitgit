@@ -1,0 +1,3 @@
+@(user: org.kohsuke.github.GHUser)
+@import lib.github.Implicits._
+<a href="@user.getHtmlUrl">@user.atLogin</a>

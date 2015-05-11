@@ -5,29 +5,16 @@
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
-            <p class="alert-warning">You're <a href="@req.gitHub.getMyself.getHtmlUrl">@req.gitHub.getMyself.atLogin</a>.</p>
+            <p class="alert-warning">You're @fragments.user(req.user)</p>
 
             @if(userPRs.nonEmpty) {
                 <h3>Your pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a></h3>
-                <ul>
-                @for(pullRequest <- userPRs) {
-                    <li>
-                        <a href="@routes.Application.reviewPullRequest(pullRequest.id)">#@pullRequest.getNumber @pullRequest.getTitle</a>
-                    </li>
-                }
-                </ul>
+                @fragments.listPullRequests(userPRs)
             } else {
                 <h3>Your don't have any pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a>...
                 you can try</h3>
-                <ul>
-                @for(pullRequest <- otherPRs) {
-                    <li>
-                        <a href="@routes.Application.reviewPullRequest(pullRequest.id)">#@pullRequest.getNumber @pullRequest.getTitle</a>
-                    </li>
-                }
-                </ul>
+                @fragments.listPullRequests(otherPRs)
             }
-
         </div>
     </div>
 }

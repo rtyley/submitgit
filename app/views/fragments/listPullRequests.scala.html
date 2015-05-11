@@ -1,0 +1,10 @@
+@(prs: Seq[org.kohsuke.github.GHPullRequest])
+@import lib.github.Implicits._
+
+<ul>
+@for(pullRequest <- prs) {
+    <li>
+        <a href="@routes.Application.reviewPullRequest(pullRequest.id)">#@pullRequest.getNumber @pullRequest.getTitle</a>
+    </li>
+}
+</ul>
