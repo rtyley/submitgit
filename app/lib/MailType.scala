@@ -55,8 +55,11 @@ object MailType {
     override val subjectPrefix = Some("[TEST]")
 
     import GHChecks._
+    import PRChecks._
+
     val checks = Seq(
-      EmailVerified
+      EmailVerified,
+      HasAReasonableNumberOfCommits
     )
   }
 
@@ -88,7 +91,8 @@ object MailType {
     val checks = generalChecks ++ Seq(
       UserOwnsPR,
       PRIsOpen,
-      HasBeenPreviewed
+      HasBeenPreviewed,
+      HasAReasonableNumberOfCommits
     )
   }
 }

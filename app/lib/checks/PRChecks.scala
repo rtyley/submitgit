@@ -36,11 +36,17 @@ object GHChecks extends Checks[GHRequest[_]] {
 
 object PRChecks extends Checks[GHPRRequest[_]] {
 
+  val MaxCommits = 20
+
   val UserOwnsPR = check(_.userOwnsPR) or (req => s"This PR was raised by ${req.pr.getUser.atLogin} - you can't submit it for them") // fatal
 
   val PRIsOpen = check(_.pr.getState == GHIssueState.OPEN) or "Can't submit a closed pull request - reopen it if you're sure"
 
   val HasBeenPreviewed = check(_.hasBeenPreviewed) or (req => s"You need to preview these commits in a test email to yourself before they can be sent for real - click the link at the bottom of the preview email!")
+
+  val HasAReasonableNumberOfCommits = checkAsync(_.commitsAndPatchesF.map(_.length <= MaxCommits)) or (req => s"For now, submitGit won't submit PRs with more than $MaxCommits commits")
+
+  val CommitSubjectsAreNotTooLong = checkAsync(_.commitsAndPatchesF.map(_.exists(_._1.getCommit.getMessage.lines.next().length > 72))) or (req => s"Your commit subbject lines are too long...")
 
 
   def checkForSubmission(req: GHPRRequest[_]) = {
@@ -57,7 +63,6 @@ object PRChecks extends Checks[GHPRRequest[_]] {
      */
 
     for (commitsAndPatches <- req.commitsAndPatchesF) {
-      assert(commitsAndPatches.length < 10)
       for ((commit, patch) <- commitsAndPatches) {
         assert(patch.subject.length > 10 && patch.subject.length < 72)
       }

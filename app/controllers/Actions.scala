@@ -9,7 +9,7 @@ import lib.github.{PullRequestId, RepoName}
 import lib.okhttpscala._
 import lib.{MailType, Patch, Patches, PreviewSignatures}
 import org.eclipse.jgit.lib.ObjectId
-import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
+import org.kohsuke.github.{GHPullRequestCommitDetail, GHPullRequest, GHRepository, GitHub}
 import play.api.libs.Crypto
 import play.api.mvc.Security.AuthenticatedBuilder
 import play.api.mvc._
@@ -31,16 +31,17 @@ class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[
 class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
   lazy val userOwnsPR = user == pr.getUser
 
-  lazy val commitsAndPatchesF: Future[Seq[(ObjectId, Patch)]] = {
+  lazy val commitsAndPatchesF: Future[Seq[(GHPullRequestCommitDetail, Patch)]] = {
     val commits = pr.listCommits().toSeq
-    require(commits.size < 10)
+    //require(commits.size < 50)
 
     val patchUrl = pr.getPatchUrl.toString
     for {
       resp <- new OkHttpClient().execute(new Builder().url(patchUrl).build())
     } yield {
       val patch = resp.body.string
-      Patches.commitsAndPatches(commits.map(c => ObjectId.fromString(c.getSha)), patch)
+      val patchesByObjectId = Patches.commitsAndPatches(commits.map(_.objectId), patch).toMap
+      commits.map(c => (c, patchesByObjectId(c.objectId)))
     }
   }
 

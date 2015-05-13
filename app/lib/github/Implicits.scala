@@ -74,4 +74,8 @@ object Implicits {
   implicit class RichGHCommitPointer(commitPointer: GHCommitPointer) {
     lazy val objectId = commitPointer.getSha.asObjectId
   }
+
+  implicit class RichGHPullRequestCommitDetail(prCommitDetail: GHPullRequestCommitDetail) {
+    lazy val objectId = prCommitDetail.getSha.asObjectId
+  }
 }
