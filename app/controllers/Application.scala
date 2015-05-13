@@ -75,7 +75,7 @@ object Application extends Controller {
     val (userPRs, otherPRs) = openPRs.partition(_.getUser.equals(myself))
     val alternativePRs = otherPRs.toStream ++ req.repo.listPullRequests(GHIssueState.CLOSED).toStream
 
-    Ok(views.html.listPullRequests(userPRs, alternativePRs.take(10)))
+    Ok(views.html.listPullRequests(userPRs, alternativePRs.take(3)))
   }
 
   def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
