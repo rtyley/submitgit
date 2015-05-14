@@ -2,6 +2,12 @@
 @import lib.github.Implicits._
 
 @main {
+
+    <div class="row">
+        <ol class="breadcrumb">
+            <li class="active"><span class="octicon octicon-repo"></span> @req.repo.id.fullName</li>
+        </ol>
+    </div>
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
