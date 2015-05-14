@@ -5,14 +5,12 @@
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
-            <p class="alert-warning">You're @fragments.user(req.user)</p>
-
             @if(userPRs.nonEmpty) {
                 <h3>Chose one of your pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a></h3>
                 @fragments.listPullRequests(userPRs)
             } else {
-                <h3>You don't have any pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a>...
-                you can try</h3>
+                <h4>You don't have any pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a>.
+                Try a preview with one of these:</h4>
                 @fragments.listPullRequests(otherPRs)
             }
         </div>

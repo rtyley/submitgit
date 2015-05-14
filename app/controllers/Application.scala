@@ -23,7 +23,7 @@ import lib.MailType.proposedMailByTypeFor
 import lib._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
-import lib.github.{GitHubAuthResponse, PullRequestId, RepoName}
+import lib.github.{GitHubAuthResponse, MinimalGHPerson, PullRequestId, RepoName}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -65,8 +65,16 @@ object Application extends Controller {
   def oauthCallback(code: String) = Action.async {
     for (response <- bareAccessTokenRequest.withQueryString("code" -> code).post("")) yield {
       val accessToken = response.json.validate[GitHubAuthResponse].get.access_token
-      redirectToGitRepo.withSession(AccessTokenSessionKey -> accessToken)
+      val user = GitHub.connectUsingOAuth(accessToken).getMyself
+      redirectToGitRepo.withSession(
+        AccessTokenSessionKey -> accessToken,
+        MinimalGHPerson(user.getLogin, user.getAvatarUrl).sessionTuple
+      )
     }
+  }
+
+  def logout = Action {
+    Redirect(routes.Application.index()).withNewSession
   }
 
   def listPullRequests(repoId: RepoName) = githubRepoAction(repoId) { implicit req =>
