@@ -1,5 +1,5 @@
 @(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, proposedMailByType: Map[lib.MailType,lib.ProposedMail])(implicit req: GHPRRequest[_])
-    @import lib.github.Implicits._
+@import lib.github.Implicits._
 
 @main {
     <div class="row">
@@ -15,12 +15,7 @@
                 #@pullRequest.getNumber @pullRequest.getTitle
             </h3>
 
-            <i class="text-muted">This PR is based off <code>@pullRequest.getBase.getRef</code>, @pullRequest.getBase.getRef match {
-                case "master" => { so in general it should be a new feature, not a bugfix. }
-                case "maint" => { so make sure it's a bugfix, not a new feature. }
-                case _ => { make sure this is what you want to do! Normally bugfixes go on <code>maint</code>, and new features go on <code>master</code>. }
-            }
-            </i>
+            @fragments.patchBaseGuidelines(pullRequest.getBase.getRef)
 
             <table class="table">
                 <caption>Commits</caption>

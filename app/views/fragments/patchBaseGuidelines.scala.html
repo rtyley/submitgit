@@ -1,0 +1,10 @@
+@(baseBranch: String)
+@import lib.Links
+@link(html: Html) = {<a href="@Links.ChoosePatchBase" class="text-muted">@html</a>}
+
+<i class="text-muted">This PR is based off <code>@baseBranch</code>, @baseBranch match {
+    case "master" => { so @link{in general it should be a new feature, not a bugfix}. }
+    case "maint" => { so @link{make sure it's a bugfix, not a new feature}. }
+    case _ => { is that right?! @link{Normally bugfixes go on <code>maint</code>, and new features go on <code>master</code>}. }
+}
+</i>
