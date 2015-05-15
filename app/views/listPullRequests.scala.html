@@ -12,7 +12,7 @@
         <div class="col-md-3"></div>
         <div class="col-md-6">
             @if(userPRs.nonEmpty) {
-                <h3>Chose one of your pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a></h3>
+                <h3>Choose one of your pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a></h3>
                 @fragments.listPullRequests(userPRs)
             } else {
                 <h4>You don't have any pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a>.
