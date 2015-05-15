@@ -1,12 +1,16 @@
 @(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, mailType: lib.MailType)(implicit req: GHPRRequest[_])
-
+@import lib.MailType
+@import lib.github.Implicits._
 @main {
     <div class="row">
+        <ol class="breadcrumb">
+            @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.id), "repo") { @req.repo.id.fullName }
+            @fragments.linkedBreadcrumb(routes.Application.reviewPullRequest(req.pr.id), "git-pull-request") { #@req.pr.getNumber }
+            <li class="active">@if(mailType==MailType.Preview){preview }email sent</li>
+        </ol>
+    </div>
+    <div class="row">
         <div class="col-md-12">
-            <h2>
-                <span class="mega-octicon octicon-repo"></span>
-                <a href="@routes.Application.listPullRequests(req.repo.id)">@req.repo.getFullName</a>
-            </h2>
             <h3>
                 <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
                 #@pullRequest.getNumber @pullRequest.getTitle

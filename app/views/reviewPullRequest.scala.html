@@ -4,17 +4,14 @@
 @main {
     <div class="row">
         <ol class="breadcrumb">
-            <li>
-                <a href="@routes.Application.listPullRequests(req.repo.id)"><span class="octicon octicon-repo"></span></a>
-                <a href="@routes.Application.listPullRequests(req.repo.id)">@req.repo.id.fullName</a>
-            </li>
+            @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.id), "repo") { @req.repo.id.fullName }
             <li class="active"><span class="octicon octicon-git-pull-request"></span> #@req.pr.getNumber</li>
         </ol>
     </div>
     <div class="row">
         <div class="col-md-7">
             <h3>
-                <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
+                <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-mark-github"></span></a>
                 #@pullRequest.getNumber @pullRequest.getTitle
             </h3>
 

@@ -1,0 +1,5 @@
+@(link: Call, octicon: String)(linkText: Html)(implicit req: RequestHeader)
+<li>
+<a href="@link"><span class="octicon octicon-@octicon"></span></a>
+<a href="@link">@linkText</a>
+</li>
