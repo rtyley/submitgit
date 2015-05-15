@@ -2,23 +2,16 @@ package lib.checks
 
 import com.github.nscala_time.time.Imports._
 import controllers.{GHPRRequest, GHRequest}
-import lib.PreviewSignatures
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
 import lib.github.Implicits._
 import org.joda.time.Period
-import org.joda.time.format.PeriodFormat
 import org.kohsuke.github.GHIssueState
+import lib.Dates._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object GHChecks extends Checks[GHRequest[_]] {
-
-  val humanPeriodFormat = PeriodFormat.getDefault
-
-  implicit class RichPeriod(period: Period) {
-    lazy val pretty = period.withMillis(0).toString(humanPeriodFormat)
-  }
 
   val EmailVerified = check(_.userEmail.isVerified) or
     (req => s"Verify your email address (${req.userEmail.getEmail}) with GitHub")

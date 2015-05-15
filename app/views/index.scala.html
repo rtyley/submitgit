@@ -1,5 +1,6 @@
 @()(implicit req: Request[AnyContent])
 @import lib.github.RepoName
+@import lib.Dates._
 @main {
     <div class="jumbotron">
         <h1>Contribute to Git!</h1>
@@ -30,7 +31,7 @@
                 a few extra requirements:<p>
 
             <ul>
-                <li>Your GitHub account must be older than 3 months</li>
+                <li>Your GitHub account must be older than @lib.MailType.Live.AccountAgeThreshold.pretty</li>
                 <li>As well as being verified in GitHub, your email must be registered with <i>submitGit</i>,
                 to allow <i>submitGit</i> to send emails with your address as the 'From:' field.</li>
             </ul>

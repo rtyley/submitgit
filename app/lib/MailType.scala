@@ -58,6 +58,7 @@ object MailType {
     import PRChecks._
 
     val checks = Seq(
+      accountIsOlderThan(1.hour),
       EmailVerified,
       HasAReasonableNumberOfCommits
     )
@@ -81,9 +82,11 @@ object MailType {
     import GHChecks._
     import PRChecks._
 
+    val AccountAgeThreshold = 1.month
+
     val generalChecks = Seq(
       EmailVerified,
-      accountIsOlderThan(1.month),
+      accountIsOlderThan(AccountAgeThreshold),
       UserHasNameSetInProfile,
       RegisteredEmailWithSES
     )
