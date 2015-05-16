@@ -25,15 +25,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object EmailRegistration extends Controller {
 
-  def gitHubUserWithVerified(email: String): ActionBuilder[GHRequest] =
-    githubAction() andThen ensureGitHubVerified(email)
+  val GitHubUserWithVerifiedEmail: ActionBuilder[GHRequest] =
+    githubAction() andThen EnsureGitHubVerifiedEmail
 
-  def isRegisteredEmail(email: String) = gitHubUserWithVerified(email).async {
+  def isRegisteredEmail(email: String) = GitHubUserWithVerifiedEmail.async {
     for (status <- ses.getIdentityVerificationStatusFor(email)) yield Ok(status.getOrElse("Unknown"))
   }
 
-  def registerEmail(email: String) = gitHubUserWithVerified(email).async {
-    for (res <- ses.sendVerificationEmailTo(email)) yield Ok("Registration email sent")
+  def registerEmail = GitHubUserWithVerifiedEmail.async { req =>
+    for (res <- ses.sendVerificationEmailTo(req.userEmail.getEmail)) yield Ok("Registration email sent")
   }
 
 }

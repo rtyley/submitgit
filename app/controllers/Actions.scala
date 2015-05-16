@@ -86,11 +86,10 @@ object Actions {
     }
   }
 
-  def ensureGitHubVerified(email: String) = new ActionFilter[GHRequest] {
+  val EnsureGitHubVerifiedEmail = new ActionFilter[GHRequest] {
     override protected def filter[A](request: GHRequest[A]): Future[Option[Result]] = Future {
-      val user = request.gitHub.getMyself
-      if (user.verifiedEmails.map(_.getEmail).contains(email)) None
-      else Some(Forbidden(s"Not a GitHub-verified email for ${user.atLogin}"))
+      if (request.userEmail.isVerified) None
+      else Some(Forbidden(s"Not a GitHub-verified email for ${request.user.atLogin}"))
     }
   }
 
