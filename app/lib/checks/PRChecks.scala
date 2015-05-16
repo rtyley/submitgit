@@ -23,7 +23,7 @@ object GHChecks extends Checks[GHRequest[_]] {
     s"To prevent spam, we don't currently allow GitHub accounts less than ${period.pretty} old - get in touch if that's a problem for you!"
 
   val RegisteredEmailWithSES = checkAsync(req => ses.getIdentityVerificationStatusFor(req.userEmail.getEmail).map(_.contains("Success"))) or
-    (req => s"Register your email address (${req.userEmail.getEmail}) with submitGit's Amazon SES account in order for it to send emails from you.")
+    (req => s"<a href='${controllers.routes.EmailRegistration.registerEmail().url}'>Register your email address</a> (${req.userEmail.getEmail}) with submitGit's Amazon SES account in order for it to send emails from you.")
 
 }
 

@@ -10,5 +10,7 @@ GET         /$pr<[^/]+/[^/]+/pull/[\d]+>                         controllers.App
 POST        /$pr<[^/]+/[^/]+/pull/[\d]+>/:submitType             controllers.Application.mailPullRequest(pr: PullRequestId, submitType: MailType)
 GET         /$pr<[^/]+/[^/]+/pull/[\d]+>/:headCommit/:sig        controllers.Application.acknowledgePreview(pr: PullRequestId, headCommit: ObjectId, sig: String)
 
+POST        /register-email                                      controllers.EmailRegistration.registerEmail()
+
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                                        controllers.Assets.at(path="/public", file)
