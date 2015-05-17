@@ -9,10 +9,9 @@
         </ol>
         @for(notifyEmailVerification <- req.flash.get("notifyEmailVerification")) {
             <div class="alert alert-info" role="alert">
-                <h4>Great! Now, please check <span href="#" data-toggle="tooltip" title="@notifyEmailVerification">your email</span> for an "Amazon SES Address Verification Request"</h4>
+                <h4>Great! Now, please check <span title="@notifyEmailVerification">your email</span> for an <q>Amazon SES Address Verification Request</q></h4>
                 <p>
-                Click the link in that email to grant <i>submitGit</i> permission to send emails with your address
-                in the 'From:' field.
+                    Click the link in that email to grant submitGit permission to send emails to the Git mailing list with <em>your</em> address in the 'From:' field
                 </p>
             </div>
         }
