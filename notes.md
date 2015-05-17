@@ -1,3 +1,9 @@
+Potential features TODO:
+
+* When closing a PR 'cos it's been posted, link to http://mid.gmane.org/1234567890.1234567890@example.com so we can see the discussion.
+* When RE-posting a PR, pull out the OLD message id so we can say it's in-reply to the
+previous message.
+
 Reasons why you can't send to the mailing-list, only preview:
 
 * You did not create the PR
