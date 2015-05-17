@@ -5,6 +5,7 @@ import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsync
 import com.amazonaws.services.simpleemail.model._
 import lib.Email
+import lib.aws.SES.VerificationStatus
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -21,8 +22,8 @@ object SesAsyncHelpers {
     override def onSuccess(request: REQUEST, result: RESULT): Unit = promise.success(result)
   }
 
-
   implicit class SesAsync(ses: AmazonSimpleEmailServiceAsync) {
+    import SES._
 
     private def invoke[REQUEST <: AmazonWebServiceRequest, RESULT]
     (
@@ -44,10 +45,10 @@ object SesAsyncHelpers {
     def getIdentityVerificationAttributesFuture(req: GetIdentityVerificationAttributesRequest): Future[GetIdentityVerificationAttributesResult] =
       invoke(ses.getIdentityVerificationAttributesAsync, req)
 
-    def getIdentityVerificationStatusFor(email: String)(implicit ec: ExecutionContext): Future[Option[String]] = {
-      var idReq = new GetIdentityVerificationAttributesRequest().withIdentities(email)
+    def getIdentityVerificationStatusFor(email: String)(implicit ec: ExecutionContext): Future[Option[VerificationStatus]] = {
+      val idReq = new GetIdentityVerificationAttributesRequest().withIdentities(email)
       for (res <- ses.getIdentityVerificationAttributesFuture(idReq)) yield
-        res.getVerificationAttributes.toMap.get(email).map(_.getVerificationStatus)
+        res.getVerificationAttributes.toMap.get(email).flatMap(_.status)
     }
 
     def sendRawEmailFuture(req: SendRawEmailRequest): Future[SendRawEmailResult] =

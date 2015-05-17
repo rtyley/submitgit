@@ -7,6 +7,15 @@
             @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.id), "repo") { @req.repo.id.fullName }
             <li class="active"><span class="octicon octicon-git-pull-request"></span> #@req.pr.getNumber</li>
         </ol>
+        @for(notifyEmailVerification <- req.flash.get("notifyEmailVerification")) {
+            <div class="alert alert-info" role="alert">
+                <h4>Great! Now, please check <span href="#" data-toggle="tooltip" title="@notifyEmailVerification">your email</span> for an "Amazon SES Address Verification Request"</h4>
+                <p>
+                Click the link in that email to grant <i>submitGit</i> permission to send emails with your address
+                in the 'From:' field.
+                </p>
+            </div>
+        }
     </div>
     <div class="row">
         <div class="col-md-7">

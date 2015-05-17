@@ -36,6 +36,7 @@ import views.html.pullRequestSent
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {
@@ -95,10 +96,28 @@ object Application extends Controller {
   }
 
   def acknowledgePreview(prId: PullRequestId, headCommit: ObjectId, signature: String) =
-    (Action andThen verifyCommitSignature(headCommit, Some(signature))) {
-    implicit req =>
-    Redirect(routes.Application.reviewPullRequest(prId)).addingToSession(PreviewSignatures.keyFor(headCommit) -> signature)
-  }
+    (githubAction() andThen verifyCommitSignature(headCommit, Some(signature))).async {
+      implicit req =>
+        val userEmail = req.userEmail.getEmail
+
+        def whatDoWeTellTheUser(userEmail: String, verificationStatusOpt: Option[VerificationStatus]): Future[Option[(String, String)]] = {
+          verificationStatusOpt match {
+            case Some(VerificationStatus.Success) => // Nothing to do
+              Future.successful(None)
+            case Some(VerificationStatus.Pending) => // Remind user to click the link in their email
+              Future.successful(Some("notifyEmailVerification" -> userEmail))
+            case _ => // send verification email, tell user to click on it
+              ses.sendVerificationEmailTo(userEmail).map(_ => Some("notifyEmailVerification" -> userEmail))
+          }
+        }
+
+        for {
+          verificationStatusOpt <- ses.getIdentityVerificationStatusFor(userEmail)
+          flashOpt <- whatDoWeTellTheUser(userEmail, verificationStatusOpt)
+        } yield {
+          Redirect(routes.Application.reviewPullRequest(prId)).addingToSession(PreviewSignatures.keyFor(headCommit) -> signature).flashing(flashOpt.toSeq: _*)
+        }
+    }
 
   def mailPullRequest(prId: PullRequestId, mailType: MailType) = (githubPRAction(prId) andThen mailChecks(mailType)).async {
     implicit req =>
