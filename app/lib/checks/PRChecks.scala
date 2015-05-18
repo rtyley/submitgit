@@ -22,7 +22,7 @@ object GHChecks extends Checks[GHRequest[_]] {
   def accountIsOlderThan(period: Period) = check(_.user.createdAt < DateTime.now - period) or
     s"To prevent spam, we don't currently allow GitHub accounts less than ${period.pretty} old - get in touch if that's a problem for you!"
 
-  val RegisteredEmailWithSES = checkAsync(req => ses.getIdentityVerificationStatusFor(req.userEmail.getEmail).map(_.contains("Success"))) or
+  val RegisteredEmailWithSES = checkAsync(req => ses.getIdentityVerificationStatusFor(req.userEmail.getEmail).map(_.contains(VerificationStatus.Success))) or
     (req => s"Register your email address (${req.userEmail.getEmail}) with submitGit's Amazon SES account in order for it to send emails from you.")
 
 }
