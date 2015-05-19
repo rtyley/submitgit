@@ -21,6 +21,7 @@ import java.io.File
 import controllers.Actions._
 import lib.MailType.proposedMailByTypeFor
 import lib._
+import lib.github.Implicits._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
 import lib.github.{GitHubAuthResponse, MinimalGHPerson, PullRequestId, RepoName}
@@ -42,8 +43,6 @@ import scala.util.Try
 object Application extends Controller {
 
   type AuthRequest[A] = AuthenticatedRequest[A, GitHub]
-
-  val repoWhiteList= Set("git/git", "submitgit/pretend-git")
 
   val AccessTokenSessionKey = "githubAccessToken"
 
@@ -121,8 +120,9 @@ object Application extends Controller {
 
   def mailPullRequest(prId: PullRequestId, mailType: MailType) = (githubPRAction(prId) andThen mailChecks(mailType)).async {
     implicit req =>
+      val mailingList = Project.byRepoName(req.repo.id).mailingList
 
-      val addresses = mailType.addressing(req.user)
+      val addresses = mailType.addressing(mailingList, req.user)
 
       def emailFor(patch: Patch)= Email(
           addresses,
@@ -132,9 +132,13 @@ object Application extends Controller {
 
       for (commitsAndPatches <- req.commitsAndPatchesF) yield {
         for (initialMessageId <- ses.send(emailFor(commitsAndPatches.head._2))) {
+          val encloseMessageId = s"<$initialMessageId>"
+          val inReplyToHeaders = Seq("References" -> encloseMessageId, "In-Reply-To" -> encloseMessageId)
           for ((commit, patch) <- commitsAndPatches.drop(1)) {
-            ses.send(emailFor(patch).copy(headers = Seq("References" -> initialMessageId, "In-Reply-To" -> initialMessageId)))
+            ses.send(emailFor(patch).copy(headers = inReplyToHeaders))
           }
+
+          mailType.afterSending(req.pr, commitsAndPatches, initialMessageId)
         }
 
         // pullRequest.comment("Closed by submitgit")

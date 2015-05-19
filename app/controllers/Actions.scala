@@ -7,7 +7,7 @@ import lib.checks.Check
 import lib.github.Implicits._
 import lib.github.{PullRequestId, RepoName}
 import lib.okhttpscala._
-import lib.{MailType, Patch, Patches, PreviewSignatures}
+import lib._
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github.{GHPullRequestCommitDetail, GHPullRequest, GHRepository, GitHub}
 import play.api.libs.Crypto
@@ -70,7 +70,7 @@ object Actions {
 
   def githubRepoAction(repoId: RepoName) = githubAction() andThen new ActionRefiner[GHRequest, GHRepoRequest] {
     override protected def refine[A](request: GHRequest[A]): Future[Either[Result, GHRepoRequest[A]]] = Future {
-      Either.cond(repoWhiteList(repoId.fullName), {
+      Either.cond(Project.byRepoName.contains(repoId), {
         val gitHub = request.gitHub
         val repo = gitHub.getRepository(repoId.fullName)
         new GHRepoRequest(gitHub, repo, request)}, Forbidden("Not a supported repo"))
