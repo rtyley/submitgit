@@ -88,7 +88,7 @@ object MailType {
     import GHChecks._
     import PRChecks._
 
-    val AccountAgeThreshold = 1.month
+    val AccountAgeThreshold = 1.day
 
     val generalChecks = Seq(
       EmailVerified,
