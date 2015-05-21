@@ -29,7 +29,7 @@ libraryDependencies ++= Seq(
   ws,
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.4",
-  "org.webjars" % "octicons" % "2.0.1",
+  "org.webjars.bower" % "octicons" % "2.2.3",
   "org.kohsuke" % "github-api" % "1.66" exclude("org.jenkins-ci", "annotation-indexer"),
   "com.github.nscala-time" %% "nscala-time" % "1.8.0",
   "com.squareup.okhttp" % "okhttp" % "2.3.0",
