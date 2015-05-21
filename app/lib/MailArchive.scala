@@ -36,7 +36,7 @@ case class GoogleGroup(groupName: String) extends MailArchive {
   val url = s"https://groups.google.com/forum/#!forum/$groupName"
 
   // https://groups.google.com/forum/#!searchin/submitgit-test/messageid:0000014cd22ce178-99ba440a-c40b-4110-ab05-c73af16cfdbc-000000@eu-west-1.amazonses.com
-  def linkFor(messageId: String) = s"https://groups.google.com/forum/#!searchin/$groupName/messageid:$messageId"
+  def linkFor(messageId: String) = s"https://groups.google.com/forum/?nomobile=true#!searchin/$groupName/messageid:$messageId"
 
   // submitgit-test@googlegroups.com
   val emailAddress = s"$groupName@googlegroups.com"
