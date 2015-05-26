@@ -30,17 +30,17 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.4",
   "org.webjars.bower" % "octicons" % "2.2.3",
-  "org.kohsuke" % "github-api" % "1.66" exclude("org.jenkins-ci", "annotation-indexer"),
-  "com.github.nscala-time" %% "nscala-time" % "1.8.0",
-  "com.squareup.okhttp" % "okhttp" % "2.3.0",
-  "com.squareup.okhttp" % "okhttp-urlconnection" % "2.3.0",
+  "org.kohsuke" % "github-api" % "1.68" exclude("org.jenkins-ci", "annotation-indexer"),
+  "com.github.nscala-time" %% "nscala-time" % "2.0.0",
+  "com.squareup.okhttp" % "okhttp" % "2.4.0",
+  "com.squareup.okhttp" % "okhttp-urlconnection" % "2.4.0",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
-  "org.eclipse.jgit" % "org.eclipse.jgit" % "3.7.0.201502260915-r",
+  "org.eclipse.jgit" % "org.eclipse.jgit" % "3.7.1.201504261725-r",
   "com.madgag.scala-git" %% "scala-git" % "2.9",
   "com.madgag.scala-git" %% "scala-git-test" % "2.9" % "test",
   "org.specs2" %% "specs2-core" % "2.4.17" % "test",
   "org.specs2" %% "specs2-junit" % "2.4.17" % "test",
-  "com.amazonaws" % "aws-java-sdk-ses" % "1.9.31",
+  "com.amazonaws" % "aws-java-sdk-ses" % "1.9.37",
   "com.sun.mail" % "javax.mail" % "1.5.3"
 )
 
