@@ -1,7 +1,7 @@
 package controllers
 
+import com.madgag.github.{PullRequestId, RepoId}
 import lib.MailType
-import lib.github.{PullRequestId, RepoName}
 import org.eclipse.jgit.lib.ObjectId
 import play.api.mvc.PathBindable.Parsing
 
@@ -15,8 +15,8 @@ object Binders {
     MailType.bySlug, _.slug, (key: String, e: Exception) => s"Cannot parse parameter '$key' as a commit id: ${e.getMessage}"
   )
 
-  implicit object bindableRepoName extends Parsing[RepoName](
-    RepoName.from, _.fullName, (key: String, e: Exception) => s"Cannot parse repo name '$key'"
+  implicit object bindableRepoId extends Parsing[RepoId](
+    RepoId.from, _.fullName, (key: String, e: Exception) => s"Cannot parse repo name '$key'"
   )
 
   implicit object bindablePullRequestId extends Parsing[PullRequestId](

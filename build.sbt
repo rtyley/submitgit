@@ -19,25 +19,24 @@ lazy val root = (project in file(".")).enablePlugins(
   buildInfoPackage := "app"
 )
 
-TwirlKeys.templateImports += "lib.github.Implicits._" // if we want it...
+TwirlKeys.templateImports ++= Seq(
+  "com.madgag.github.Implicits._",
+  "lib.actions.Requests._"
+)
 
-routesImport ++= Seq("lib._","lib.github._","controllers.Binders._","org.eclipse.jgit.lib.ObjectId")
+routesImport ++= Seq("lib._","com.madgag.github._","controllers.Binders._","org.eclipse.jgit.lib.ObjectId")
+
+resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
   cache,
   filters,
-  ws,
+  "com.madgag" %% "play-git-hub" % "1.1",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.4",
   "org.webjars.bower" % "octicons" % "2.2.3",
-  "org.kohsuke" % "github-api" % "1.68" exclude("org.jenkins-ci", "annotation-indexer"),
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
-  "com.squareup.okhttp" % "okhttp" % "2.4.0",
-  "com.squareup.okhttp" % "okhttp-urlconnection" % "2.4.0",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
-  "org.eclipse.jgit" % "org.eclipse.jgit" % "3.7.1.201504261725-r",
-  "com.madgag.scala-git" %% "scala-git" % "2.9",
-  "com.madgag.scala-git" %% "scala-git-test" % "2.9" % "test",
   "org.specs2" %% "specs2-core" % "2.4.17" % "test",
   "org.specs2" %% "specs2-junit" % "2.4.17" % "test",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.9.37",

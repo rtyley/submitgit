@@ -1,13 +1,14 @@
 package lib.checks
 
 import com.github.nscala_time.time.Imports._
-import controllers.{GHPRRequest, GHRequest}
+import com.madgag.github.Implicits._
+import com.madgag.playgithub.auth.GHRequest
+import lib.Dates._
+import lib.actions.Requests._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
-import lib.github.Implicits._
 import org.joda.time.Period
 import org.kohsuke.github.GHIssueState
-import lib.Dates._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

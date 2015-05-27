@@ -5,7 +5,6 @@ import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsync
 import com.amazonaws.services.simpleemail.model._
 import lib.Email
-import lib.aws.SES.VerificationStatus
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.{ExecutionContext, Future, Promise}

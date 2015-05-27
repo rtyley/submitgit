@@ -1,6 +1,5 @@
 @(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String)(implicit req: GHPRRequest[_])
 @import helper._
-@import lib.github.Implicits._
 
 
 <div role="tabpanel" class="tab-pane @if(isDefault) { fade in active }" id="mail-@mailType.slug">

@@ -1,12 +1,12 @@
 @()(implicit req: Request[AnyContent])
-@import lib.github.RepoName
+@import com.madgag.github.RepoId
 @import lib.Dates._
 @main {
     <div class="jumbotron">
         <h1>Contribute to Git!</h1>
         <p><i>Patches for the mailing list... pull requests for you</i></p>
-        <p><a class="btn btn-primary btn-lg" href="@routes.Application.listPullRequests(RepoName("git","git"))" role="button">Get started</a>
-            ...or experiment on our <a href="@routes.Application.listPullRequests(RepoName("submitgit","pretend-git"))">test repo!</a></p>
+        <p><a class="btn btn-primary btn-lg" href="@routes.Application.listPullRequests(RepoId("git","git"))" role="button">Get started</a>
+            ...or experiment on our <a href="@routes.Application.listPullRequests(RepoId("submitgit","pretend-git"))">test repo!</a></p>
     </div>
 
     <div class="row">
