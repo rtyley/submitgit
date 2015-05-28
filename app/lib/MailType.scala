@@ -108,7 +108,7 @@ object MailType {
     override def afterSending(pr: GHPullRequest, commitsAndPatches: Seq[(GHPullRequestCommitDetail, Patch)], messageId: String) {
       val mailingListLinks = Project.byRepoId(pr.id.repo).mailingList.archives.map(a => s"[${a.providerName}](${a.linkFor(messageId)})").mkString(", ")
       pr.comment(
-        s"I've sent this PR to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +
+        s"${pr.getUser.atLogin} sent this to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +
           s"here on $mailingListLinks []($messageId)")
     }
   }

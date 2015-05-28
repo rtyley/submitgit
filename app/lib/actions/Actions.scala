@@ -18,7 +18,7 @@ import scala.util.{Failure, Success, Try}
 
 
 object Actions {
-  private val authScopes = Seq("user:email", "public_repo")
+  private val authScopes = Seq("user:email")
 
   val GitHubAuthenticatedAction = com.madgag.playgithub.auth.Actions.githubAction(authScopes)(Auth.authClient)
 
@@ -26,7 +26,7 @@ object Actions {
     override protected def refine[A](request: GHRequest[A]): Future[Either[Result, GHRepoRequest[A]]] = Future {
       Either.cond(Project.byRepoId.contains(repoId), {
         val gitHub = request.gitHub
-        val repo = gitHub.getRepository(repoId.fullName)
+        val repo = Bot.conn().getRepository(repoId.fullName)
         new GHRepoRequest(gitHub, repo, request)}, Forbidden("Not a supported repo"))
     }
   }
