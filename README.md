@@ -1,4 +1,4 @@
-submitGit (pre-alpha - DO NOT USE)
+submitGit (beta)
 =========
 
 The Git project has a [patch submission process](https://github.com/git/git/blob/1eb0545c/Documentation/SubmittingPatches#L120-L464)
@@ -20,7 +20,6 @@ Bitbucket pull requests.
 
 _submitGit_ is a small step in trying to make patch submission
 more easy. If you create a pull request on [github.com/git/git/](https://github.com/git/git/pulls),
-_submitGit_ can close it for you by correctly formatting it as
-a series of patches, and sending it to the mailing list. The
-discussion stays where it is- on the list -but at least that
-initial step is a little easier.
+_submitGit_ can send it to the mailing list for you, correctly
+formatting the patches. The discussion stays where it is- on the
+list -but at least that initial step is a little easier.
