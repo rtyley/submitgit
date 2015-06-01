@@ -24,8 +24,7 @@ object Requests {
     lazy val userOwnsPR = user == pr.getUser
 
     lazy val commitsAndPatchesF: Future[Seq[(GHPullRequestCommitDetail, Patch)]] = {
-      val commits = pr.listCommits().toSeq
-      //require(commits.size < 50)
+      val commits = pr.listCommits().toSeq.reverse
 
       val patchUrl = pr.getPatchUrl.toString
       for {
