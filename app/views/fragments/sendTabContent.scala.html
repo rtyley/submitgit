@@ -3,23 +3,51 @@
 
 
 <div role="tabpanel" class="tab-pane @if(isDefault) { fade in active }" id="mail-@mailType.slug">
+@form(routes.Application.mailPullRequest(req.pr.id, mailType),  'class -> "form-horizontal") {
+    @CSRF.formField
+
+    @if(proposedMail.errors.nonEmpty) {
+        <div class="alert alert-warning" role="alert">
+            <ul>
+            @for(error <- proposedMail.errors) {
+                <li>@error</li>
+            }
+            </ul>
+        </div>
+    }
+
 @fragments.emailAddresses(proposedMail.addresses)
-@if(proposedMail.errors.nonEmpty) {
-    <div class="alert alert-warning" role="alert">
-        <ul>
-        @for(error <- proposedMail.errors) {
-            <li>@error</li>
+
+    <script>
+        function resizeInput() {
+            $(this).attr('size', $(this).val().length);
         }
-        </ul>
+
+        $('input[type="text"].fish')
+            .keyup(resizeInput).keypress(resizeInput)
+            .each(resizeInput);
+    </script>
+
+    <div class="form-group">
+        <label for="inputPassword" class="col-sm-4 control-label">Subject prefix:</label>
+        <div class="col-sm-8" >
+            <span class="form-control" style="font-family:monospace; width: auto;">
+                <span class="text-muted">[</span><input class="fish" type="text" maxlength="18" size="18" value="PATCH" style="border: 0; outline: 0; font-family:monospace;" /><span class="text-muted">]</span>
+            </span>
+        </div>
     </div>
+
+    <div class="form-group">
+        <div class="col-sm-offset-4 col-sm-8">
+            <button
+            class="btn @btnClass btn-lg"
+            value="send"
+                @if(proposedMail.errors.nonEmpty) { disabled="disabled" }
+            >Send</button>
+        </div>
+    </div>
+
+
 }
 
-@form(routes.Application.mailPullRequest(req.pr.id, mailType)) {
-    @CSRF.formField
-    <button
-    class="btn @btnClass btn-lg"
-    value="send"
-    @if(proposedMail.errors.nonEmpty) { disabled="disabled" }
-    >Send</button>
-}
 </div>
