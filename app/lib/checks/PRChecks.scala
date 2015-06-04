@@ -30,7 +30,7 @@ object GHChecks extends Checks[GHRequest[_]] {
 
 object PRChecks extends Checks[GHPRRequest[_]] {
 
-  val MaxCommits = 20
+  val MaxCommits = 30
 
   val UserOwnsPR = check(_.userOwnsPR) or (req => s"This PR was raised by ${req.pr.getUser.atLogin} - you can't submit it for them") // fatal
 
