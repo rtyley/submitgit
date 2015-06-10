@@ -40,7 +40,7 @@ Register a new OAuth application with GitHub on https://github.com/settings/appl
 Also generate a GitHub 'personal access token' with the `public_repo` scope at
 https://github.com/settings/tokens/new
 
-Tell _submitGit_ about these credentials by seting the following environment variables:
+Tell _submitGit_ about these credentials by setting the following environment variables:
 
 * `GITHUB_APP_CLIENT_ID`
 * `GITHUB_APP_CLIENT_SECRET`
