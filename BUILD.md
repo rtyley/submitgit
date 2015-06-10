@@ -8,7 +8,7 @@ _submitGit_ is written in Scala, a modern functional language that runs on the J
 can run anywhere Java can.
 
 * Install Java 8 or above
-* Install [sbt](http://www.scala-sbt.org/release/docs/Getting-Started/Setup.html#installing-sbt), the Scala build tool
+* Install [sbt](http://www.scala-sbt.org/release/tutorial/Setup.html), the Scala build tool
 
 ## Service Credentials
 
