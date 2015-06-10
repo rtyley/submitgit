@@ -23,12 +23,12 @@ with Amazon SES
 You'll need an Amazon AWS account. Create an IAM User, and attach a policy to it allowing it to
 perform these actions:
 
-* ses:SendRawEmail
-* ses:VerifyEmailIdentity
-* ses:GetIdentityVerificationAttributes
+* `ses:SendRawEmail`
+* `ses:VerifyEmailIdentity`
+* `ses:GetIdentityVerificationAttributes`
 
 The AWS credentials associated with this user should be stored as an AWS CLI profile
-named 'submitgit'.
+named `submitgit`.
 
 ##### GitHub
 
@@ -42,9 +42,9 @@ https://github.com/settings/tokens/new
 
 Tell _submitGit_ about these credentials by seting the following environment variables:
 
-* GITHUB_APP_CLIENT_ID 
-* GITHUB_APP_CLIENT_SECRET
-* SUBMITGIT_GITHUB_ACCESS_TOKEN
+* `GITHUB_APP_CLIENT_ID`
+* `GITHUB_APP_CLIENT_SECRET`
+* `SUBMITGIT_GITHUB_ACCESS_TOKEN`
 
 
 # Finally, build and run...
