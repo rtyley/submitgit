@@ -15,9 +15,10 @@ can run anywhere Java can.
 ##### Amazon Simple Email Service (SES)
 
 [Amazon SES](http://docs.aws.amazon.com/ses/latest/DeveloperGuide/Welcome.html) is used to
-send email for preview, and to the mailing list. Part of the reason for choosing this service
-is that is an SMTP service in good standing which allows you to send emails with arbitrary
-'From:' addresses - so long as those emails are validated with Amazon SES
+send email for preview, and to the mailing list. Part of the reason for choosing it
+is that it's an SMTP service in good standing (not associated with spam) which allows
+you to send emails with arbitrary 'From:' addresses - so long as those emails are validated
+with Amazon SES
 
 You'll need an Amazon AWS account. Create an IAM User, and attach a policy to it allowing it to
 perform these actions:
