@@ -27,7 +27,7 @@ sealed trait MailType {
 
 object MailType {
   
-  def userEmailString(user: GHMyself): String = s"${user.displayName} <${user.primaryEmail.getEmail}>"
+  def userEmailString(user: GHMyself) = s"${user.displayName} <${user.primaryEmail.getEmail}>"
   
   val all = Seq(Preview, Live)
 
