@@ -27,6 +27,11 @@ case class Email(
   headers: Seq[(String, String)] = Seq.empty
 ) {
 
+  def inReplyTo(unenclosedMessageId: String): Email = {
+    val encloseMessageId = s"<$unenclosedMessageId>"
+    copy(headers = headers ++ Seq("References" -> encloseMessageId, "In-Reply-To" -> encloseMessageId))
+  }
+
   lazy val toMimeMessage: ByteBuffer = {
     val s = javax.mail.Session.getInstance(new Properties(), null)
     val msg = new MimeMessage(s)

@@ -79,10 +79,8 @@ object Application extends Controller {
       for (patchCommits <- req.patchCommitsF) yield {
         val patchBomb = PatchBomb(patchCommits, addresses, "PATCH", mailType.subjectPrefix, mailType.footer(req.pr))
         for (initialMessageId <- ses.send(patchBomb.emails.head)) {
-          val encloseMessageId = s"<$initialMessageId>"
-          val inReplyToHeaders = Seq("References" -> encloseMessageId, "In-Reply-To" -> encloseMessageId)
           for (email <- patchBomb.emails.drop(1)) {
-            ses.send(email.copy(headers = inReplyToHeaders))
+            ses.send(email.inReplyTo(initialMessageId))
           }
 
           mailType.afterSending(req.pr, initialMessageId)
