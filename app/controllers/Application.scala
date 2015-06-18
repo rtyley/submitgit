@@ -14,9 +14,12 @@ import lib.model.{PatchBomb, PatchCommit, Patch}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
+import play.api.data.Form
+import play.api.data.Forms._
 import play.api.libs.json.Json
 import play.api.mvc._
 import views.html.pullRequestSent
+import play.api.i18n.Messages.Implicits._
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,6 +27,8 @@ import scala.concurrent.Future
 import scala.util.Try
 
 object Application extends Controller {
+
+  import play.api.Play.current
 
   def index = Action { implicit req =>
     Ok(views.html.index())
@@ -41,6 +46,7 @@ object Application extends Controller {
   def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
     val myself = req.gitHub.getMyself
 
+    implicit val form = mailSettingsForm.fill(PRMailSettings("PATCH"))
     for (proposedMailByType <- proposedMailByTypeFor(req)) yield {
       Ok(views.html.reviewPullRequest(req.pr, myself, proposedMailByType))
     }
@@ -70,14 +76,20 @@ object Application extends Controller {
         }
     }
 
-  def mailPullRequest(prId: PullRequestId, mailType: MailType) = (githubPRAction(prId) andThen mailChecks(mailType)).async {
+  val mailSettingsForm = Form(
+    mapping(
+      "subjectPrefix" -> nonEmptyText(maxLength = 20)
+    )(PRMailSettings.apply)(PRMailSettings.unapply)
+  )
+
+  def mailPullRequest(prId: PullRequestId, mailType: MailType) = (githubPRAction(prId) andThen mailChecks(mailType)).async(parse.form(mailSettingsForm)) {
     implicit req =>
       val mailingList = Project.byRepoId(req.repo.id).mailingList
 
       val addresses = mailType.addressing(mailingList, req.user)
-
+      
       for (patchCommits <- req.patchCommitsF) yield {
-        val patchBomb = PatchBomb(patchCommits, addresses, "PATCH", mailType.subjectPrefix, mailType.footer(req.pr))
+        val patchBomb = PatchBomb(patchCommits, addresses, req.body.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
         for (initialMessageId <- ses.send(patchBomb.emails.head)) {
           for (email <- patchBomb.emails.drop(1)) {
             ses.send(email.inReplyTo(initialMessageId))
