@@ -1,4 +1,5 @@
-@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, proposedMailByType: Map[lib.MailType,lib.ProposedMail])(implicit req: GHPRRequest[_])
+@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, proposedMailByType: Map[lib.MailType,lib.ProposedMail]
+        )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @main {
     <div class="row">
         <ol class="breadcrumb">

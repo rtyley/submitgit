@@ -1,3 +1,19 @@
+In http://git-scm.com/docs/git-format-patch :
+
+--subject-prefix=<Subject-Prefix>
+Instead of the standard [PATCH] prefix in the subject line, instead use [<Subject-Prefix>]. This allows for useful naming of a patch series, and can be combined with the --numbered option.
+
+[PATCH v2 ...]
+[RFC/PATCH ...]
+[WIP/PATCH v4 6/8]
+[PATCH]
+[RFC/WIP PATCH 06/11]
+[PATCH/WIP 4/8]
+
+Matthieu Moy said: I found no way to specify a version like [PATCH v2 ...]. Similarly, there could be a way to say [RFC/PATCH ...].
+
+
+
 Potential features TODO:
 
 * When closing a PR 'cos it's been posted, link to http://mid.gmane.org/1234567890.1234567890@example.com so we can see the discussion.

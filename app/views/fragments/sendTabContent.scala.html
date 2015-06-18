@@ -1,25 +1,40 @@
-@(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String)(implicit req: GHPRRequest[_])
+@(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String
+        )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @import helper._
-
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-4", "col-md-8") }
 
 <div role="tabpanel" class="tab-pane @if(isDefault) { fade in active }" id="mail-@mailType.slug">
-@fragments.emailAddresses(proposedMail.addresses)
-@if(proposedMail.errors.nonEmpty) {
-    <div class="alert alert-warning" role="alert">
-        <ul>
-        @for(error <- proposedMail.errors) {
-            <li>@error</li>
-        }
-        </ul>
-    </div>
-}
-
-@form(routes.Application.mailPullRequest(req.pr.id, mailType)) {
+@b3.form(routes.Application.mailPullRequest(req.pr.id, mailType)) {
     @CSRF.formField
-    <button
-    class="btn @btnClass btn-lg"
-    value="send"
-    @if(proposedMail.errors.nonEmpty) { disabled="disabled" }
-    >Send</button>
+
+    @if(proposedMail.errors.nonEmpty) {
+        <div class="alert alert-warning" role="alert">
+            <ul>
+            @for(error <- proposedMail.errors) {
+                <li>@error</li>
+            }
+            </ul>
+        </div>
+    }
+
+    @fragments.emailAddresses(proposedMail.addresses)
+
+    @b3.inputWrapped("text", prMailSettings("subjectPrefix"), '_label -> "Subject prefix", 'placeholder -> "PATCH", 'maxlength -> "20") { input =>
+        <div class="input-group">
+            <span class="input-group-addon">[</span>
+            @input
+            <span class="input-group-addon">]</span>
+        </div>
+    }
+
+    <div class="form-group">
+        <div class="col-sm-offset-4 col-sm-8">
+            <button
+            class="btn @btnClass btn-lg"
+            value="send"
+                @if(proposedMail.errors.nonEmpty) { disabled="disabled" }
+            >Send</button>
+        </div>
+    </div>
 }
 </div>

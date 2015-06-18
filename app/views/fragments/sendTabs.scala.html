@@ -1,4 +1,5 @@
-@(defaultMailTab: lib.MailType, proposedMailByType: Map[lib.MailType,lib.ProposedMail])(implicit req: GHPRRequest[_])
+@(defaultMailTab: lib.MailType, proposedMailByType: Map[lib.MailType,lib.ProposedMail]
+        )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @import lib.MailType
 @import MailType.{Live, Preview}
 

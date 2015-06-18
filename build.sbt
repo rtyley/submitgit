@@ -26,7 +26,10 @@ TwirlKeys.templateImports ++= Seq(
 
 routesImport ++= Seq("lib._","com.madgag.github._","controllers.Binders._","org.eclipse.jgit.lib.ObjectId")
 
-resolvers += Resolver.sonatypeRepo("releases")
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots")
+)
 
 libraryDependencies ++= Seq(
   cache,
@@ -34,6 +37,7 @@ libraryDependencies ++= Seq(
   "com.madgag" %% "play-git-hub" % "1.1",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.4",
+  "com.adrianhurt" %% "play-bootstrap3" % "0.4.4-P24-SNAPSHOT",
   "org.webjars.bower" % "octicons" % "2.2.3",
   "com.lihaoyi" %% "fastparse" % "0.1.7",
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
