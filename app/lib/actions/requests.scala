@@ -1,12 +1,14 @@
 package lib.actions
 
+import com.madgag.git._
 import com.madgag.github.Implicits._
 import com.madgag.okhttpscala._
 import com.madgag.playgithub.auth.GHRequest
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
-import lib.{MailType, Patch, Patches, PreviewSignatures}
-import org.kohsuke.github.{GHPullRequest, GHPullRequestCommitDetail, GHRepository, GitHub}
+import lib._
+import lib.model.{Commit, PatchCommit}
+import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
 import play.api.mvc.Request
 
 import scala.collection.convert.wrapAll._
@@ -23,16 +25,16 @@ object Requests {
   class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
     lazy val userOwnsPR = user == pr.getUser
 
-    lazy val commitsAndPatchesF: Future[Seq[(GHPullRequestCommitDetail, Patch)]] = {
-      val commits = pr.listCommits().toSeq.reverse
+    lazy val patchCommitsF: Future[Seq[PatchCommit]] = {
+      val ghCommits = pr.listCommits().toSeq
 
       val patchUrl = pr.getPatchUrl.toString
       for {
         resp <- new OkHttpClient().execute(new okhttp.Request.Builder().url(patchUrl).build())
       } yield {
         val patch = resp.body.string
-        val patchesByObjectId = Patches.commitsAndPatches(commits.map(_.objectId), patch).toMap
-        commits.map(c => (c, patchesByObjectId(c.objectId)))
+        val commits = ghCommits.map(ghc => Commit(ghc.getSha.asObjectId, ghc.getCommit.getMessage))
+        PatchCommit.from(commits, patch)
       }
     }
 

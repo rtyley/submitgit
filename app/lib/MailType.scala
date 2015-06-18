@@ -5,14 +5,14 @@ import com.madgag.github.Implicits._
 import controllers.routes
 import lib.actions.Requests._
 import lib.checks.{Check, GHChecks, PRChecks}
-import org.kohsuke.github.{GHMyself, GHPullRequest, GHPullRequestCommitDetail}
+import org.kohsuke.github.{GHMyself, GHPullRequest}
 import play.api.mvc.RequestHeader
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 sealed trait MailType {
-  def afterSending(pr: GHPullRequest, commitsAndPatches: Seq[(GHPullRequestCommitDetail, Patch)], messageId: String)
+  def afterSending(pr: GHPullRequest, messageId: String)
 
   val slug: String
 
@@ -55,7 +55,7 @@ object MailType {
       to = Seq(userEmailString(user))
     )
 
-    override val subjectPrefix = Some("[TEST]")
+    override val subjectPrefix = Some("TEST")
 
     import GHChecks._
     import PRChecks._
@@ -66,7 +66,7 @@ object MailType {
       HasAReasonableNumberOfCommits
     )
 
-    override def afterSending(request: GHPullRequest, commitsAndPatches: Seq[(GHPullRequestCommitDetail, Patch)], messageId: String) {
+    override def afterSending(request: GHPullRequest, messageId: String) {
       // Nothing for preview
     }
   }
@@ -105,7 +105,7 @@ object MailType {
       HasAReasonableNumberOfCommits
     )
 
-    override def afterSending(pr: GHPullRequest, commitsAndPatches: Seq[(GHPullRequestCommitDetail, Patch)], messageId: String) {
+    override def afterSending(pr: GHPullRequest, messageId: String) {
       val mailingListLinks = Project.byRepoId(pr.id.repo).mailingList.archives.map(a => s"[${a.providerName}](${a.linkFor(messageId)})").mkString(", ")
       pr.comment(
         s"${pr.getUser.atLogin} sent this to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +

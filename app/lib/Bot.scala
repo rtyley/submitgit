@@ -1,6 +1,6 @@
 package lib
 
-import java.nio.file.{Paths, Files, Path}
+import java.nio.file.Paths
 
 import com.madgag.github.OkGitHub
 

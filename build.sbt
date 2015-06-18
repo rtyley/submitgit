@@ -35,6 +35,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.4",
   "org.webjars.bower" % "octicons" % "2.2.3",
+  "com.lihaoyi" %% "fastparse" % "0.1.7",
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
   "org.specs2" %% "specs2-core" % "2.4.17" % "test",

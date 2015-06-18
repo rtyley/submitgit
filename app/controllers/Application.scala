@@ -10,6 +10,7 @@ import lib.actions.Actions._
 import lib.actions.Requests._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
+import lib.model.{PatchBomb, PatchCommit, Patch}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -75,25 +76,17 @@ object Application extends Controller {
 
       val addresses = mailType.addressing(mailingList, req.user)
 
-      def emailFor(patch: Patch)= Email(
-          addresses,
-          subject = (mailType.subjectPrefix ++ Seq(patch.subject)).mkString(" "),
-          bodyText = s"${patch.body}\n---\n${mailType.footer(req.pr)}"
-        )
-
-      for (commitsAndPatches <- req.commitsAndPatchesF) yield {
-        for (initialMessageId <- ses.send(emailFor(commitsAndPatches.head._2))) {
+      for (patchCommits <- req.patchCommitsF) yield {
+        val patchBomb = PatchBomb(patchCommits, addresses, "PATCH", mailType.subjectPrefix, mailType.footer(req.pr))
+        for (initialMessageId <- ses.send(patchBomb.emails.head)) {
           val encloseMessageId = s"<$initialMessageId>"
           val inReplyToHeaders = Seq("References" -> encloseMessageId, "In-Reply-To" -> encloseMessageId)
-          for ((commit, patch) <- commitsAndPatches.drop(1)) {
-            ses.send(emailFor(patch).copy(headers = inReplyToHeaders))
+          for (email <- patchBomb.emails.drop(1)) {
+            ses.send(email.copy(headers = inReplyToHeaders))
           }
 
-          mailType.afterSending(req.pr, commitsAndPatches, initialMessageId)
+          mailType.afterSending(req.pr, initialMessageId)
         }
-
-        // pullRequest.comment("Closed by submitgit")
-        // pullRequest.close()
         Ok(pullRequestSent(req.pr, req.user, mailType))
       }
   }
