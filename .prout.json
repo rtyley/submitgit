@@ -1,5 +1,5 @@
 {
   "checkpoints": {
-    "PROD": { "url": "https://submitgit.herokuapp.com/", "overdue": "10M" }
+    "PROD": { "url": "https://submitgit.herokuapp.com/", "overdue": "12M" }
   }
 }
