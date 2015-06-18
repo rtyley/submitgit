@@ -7,7 +7,7 @@ import com.madgag.playgithub.auth.GHRequest
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import lib._
-import lib.model.{Commit, PatchCommit}
+import lib.model.{UserIdent, Commit, PatchCommit}
 import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
 import play.api.mvc.Request
 
@@ -33,7 +33,15 @@ object Requests {
         resp <- new OkHttpClient().execute(new okhttp.Request.Builder().url(patchUrl).build())
       } yield {
         val patch = resp.body.string
-        val commits = ghCommits.map(ghc => Commit(ghc.getSha.asObjectId, ghc.getCommit.getMessage))
+        val commits = ghCommits.map { ghc =>
+          val ghCommit = ghc.getCommit
+          Commit(
+            ghc.getSha.asObjectId,
+            UserIdent.from(ghCommit.getAuthor),
+            UserIdent.from(ghCommit.getCommitter),
+            ghCommit.getMessage
+          )
+        }
         PatchCommit.from(commits, patch)
       }
     }

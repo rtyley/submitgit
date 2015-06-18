@@ -9,7 +9,7 @@ import lib.model.PatchBomb.countTextFor
 case class PatchBomb(
   patchCommits: Seq[PatchCommit],
   addresses: Addresses,
-  shortDescription: String,
+  shortDescription: String = "PATCH",
   additionalPrefix: Option[String] = None,
   footer: String
 ) {
@@ -17,10 +17,14 @@ case class PatchBomb(
     for ((patchCommit, index) <- patchCommits.zipWithIndex) yield {
       val patchDescriptionAndIndex = (Seq(shortDescription) ++ countTextFor(index + 1, patchCommits.size)).mkString(" ")
       val prefixes = (additionalPrefix.toSeq :+ patchDescriptionAndIndex).map("["+_+"]")
+
+      val authorEmailString = patchCommit.commit.author.userEmailString
+      val fromBodyPrefixOpt = Some(s"From: $authorEmailString\n").filterNot(_ => authorEmailString == addresses.from)
+
       Email(
         addresses,
         subject = (prefixes :+ patchCommit.commit.subject).mkString(" "),
-        bodyText = s"${patchCommit.patch.body}\n---\n$footer"
+        bodyText = (fromBodyPrefixOpt.toSeq :+ s"${patchCommit.patch.body}\n---\n$footer").mkString("\n")
       )
     }
   }
