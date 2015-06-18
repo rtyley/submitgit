@@ -17,6 +17,7 @@ import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.Json
+import play.api.libs.json.Json._
 import play.api.mvc._
 import views.html.pullRequestSent
 import play.api.i18n.Messages.Implicits._
@@ -46,7 +47,13 @@ object Application extends Controller {
   def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
     val myself = req.gitHub.getMyself
 
-    implicit val form = mailSettingsForm.fill(PRMailSettings("PATCH"))
+    val settings = (for {
+      data <- req.session.get(prId.slug)
+      s <- Json.parse(data).validate[PRMailSettings].asOpt
+    } yield s).getOrElse(PRMailSettings("PATCH"))
+
+    req.session.get(prId.slug).map(Json.parse).map(fromJson[PRMailSettings](_).asOpt)
+    implicit val form = mailSettingsForm.fill(settings)
     for (proposedMailByType <- proposedMailByTypeFor(req)) yield {
       Ok(views.html.reviewPullRequest(req.pr, myself, proposedMailByType))
     }
@@ -78,7 +85,7 @@ object Application extends Controller {
 
   val mailSettingsForm = Form(
     mapping(
-      "subjectPrefix" -> nonEmptyText(maxLength = 20)
+      "subjectPrefix" -> default(text(maxLength = 20), "PATCH")
     )(PRMailSettings.apply)(PRMailSettings.unapply)
   )
 
@@ -87,9 +94,11 @@ object Application extends Controller {
       val mailingList = Project.byRepoId(req.repo.id).mailingList
 
       val addresses = mailType.addressing(mailingList, req.user)
+
+      val settings = req.body
       
       for (patchCommits <- req.patchCommitsF) yield {
-        val patchBomb = PatchBomb(patchCommits, addresses, req.body.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
+        val patchBomb = PatchBomb(patchCommits, addresses, settings.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
         for (initialMessageId <- ses.send(patchBomb.emails.head)) {
           for (email <- patchBomb.emails.drop(1)) {
             ses.send(email.inReplyTo(initialMessageId))
@@ -97,7 +106,7 @@ object Application extends Controller {
 
           mailType.afterSending(req.pr, initialMessageId)
         }
-        Ok(pullRequestSent(req.pr, req.user, mailType))
+        Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> Json.toJson(settings).toString)
       }
   }
 
