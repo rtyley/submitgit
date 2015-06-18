@@ -1,0 +1,24 @@
+From af7333c176401601d67ea67cb961332ee4ef3574 Mon Sep 17 00:00:00 2001
+From: Ariel Faigon <github.2009@yendor.com>
+Date: Fri, 5 Jun 2015 16:47:45 -0700
+Subject: [PATCH] Avoid failing to create ${__git_tcsh_completion_script} when
+ 'set noclobber' is in effect
+
+tcsh users who happen to have 'set noclobber' elsewhere in their ~/.tcshrc or ~/.cshrc startup files get a 'File exist' error, and the tcsh completion file doesn't get generated/updated.  Adding a `!` in the redirect works correctly for both clobber and noclobber users.
+---
+ contrib/completion/git-completion.tcsh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/contrib/completion/git-completion.tcsh b/contrib/completion/git-completion.tcsh
+index 6104a42..4a790d8 100644
+--- a/contrib/completion/git-completion.tcsh
++++ b/contrib/completion/git-completion.tcsh
+@@ -41,7 +41,7 @@ if ( ! -e ${__git_tcsh_completion_original_script} ) then
+ 	exit
+ endif
+ 
+-cat << EOF > ${__git_tcsh_completion_script}
++cat << EOF >! ${__git_tcsh_completion_script}
+ #!bash
+ #
+ # This script is GENERATED and will be overwritten automatically.
