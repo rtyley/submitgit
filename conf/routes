@@ -11,5 +11,8 @@ GET         /$pr<[^/]+/[^/]+/pull/[\d]+>/:headCommit/:sig        controllers.App
 GET         /oauth/callback                                      controllers.Auth.oauthCallback(code: String)
 GET         /logout                                              controllers.Auth.logout()
 
+GET         /api/$repo<[^/]+/[^/]+>/message-lookup               @controllers.Api.messageLookup(repo: com.madgag.github.RepoId, query: String)
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                                        controllers.Assets.at(path="/public", file)

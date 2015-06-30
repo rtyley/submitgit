@@ -1,0 +1,7 @@
+@(messageSummary: lib.MessageSummary)
+<small>
+    <h5 title="@messageSummary.subject"
+    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; margin: 0px;">@messageSummary.subject</h5>
+@messageSummary.addresses.from -
+    <a target="_blank" href="{{groupLink}}"><time class="timeago" datetime="{{date}}">{{date}}</time></a>
+</small>

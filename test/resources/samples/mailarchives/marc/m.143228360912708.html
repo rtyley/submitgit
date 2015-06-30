@@ -1,0 +1,100 @@
+<head>
+ <meta http-equiv="Content-Type" content="text/html ">
+ <title>'[Announce] submitGit for patch submission (was "Diffing submodule does not yield complete logs")' - MARC</title>
+ <link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body bgcolor="#ffffff" text="#000000" link="#0000C0" vlink="#800080">
+<pre><b>[<a href="?l=git&m=143227875111419&w=2">prev in list</a>] [<a href="?l=git&m=143228376712745&w=2">next in list</a>] [<font color="#c0c0c0">prev in thread</font>] [<a href="?l=git&m=143228779114040&w=2">next in thread</a>] </b>
+<b><font size=+1>
+List:       <a href="?l=git&r=1&w=2">git</a>
+Subject:    <a href="?t=143228378200002&r=1&w=2">[Announce] submitGit for patch submission (was "Diffing submodule does not yield complete logs")</a>
+From:       <a href="?a=131244396900001&r=1&w=2">Roberto Tyley &lt;roberto.tyley () gmail ! com&gt;</a>
+Date:       <a href="?l=git&r=1&w=2&b=201505">2015-05-22 8:33:20</a>
+Message-ID: <a href="?i=CAFY1edY3+Wt-p2iQ5k64Fg-nMk2PmRSvhVkQSVNw94R18uPV2Q%20()%20mail%20!%20gmail%20!%20com">CAFY1edY3+Wt-p2iQ5k64Fg-nMk2PmRSvhVkQSVNw94R18uPV2Q () mail ! gmail ! com</a></font>
+[<a href="?l=git&m=143228360912708&q=raw">Download message RAW</a>]</b>
+
+On Tuesday, 19 May 2015, Stefan Beller &lt;sbeller@google.com&gt; wrote:
+&gt; On Tue, May 19, 2015 at 12:29 PM, Robert Dailey
+&gt; &lt;rcdailey.lists@gmail.com&gt; wrote:
+&gt; &gt; How do you send your patches inline?
+[snip]
+&gt; This workflow discussion was a topic at the GitMerge2015 conference,
+&gt; and there are essentially 2 groups, those who know how to send email
+&gt; and those who complain about it. A solution was agreed on by nearly all
+&gt; of the contributors. It would be awesome to have a git-to-email proxy,
+&gt; such that you could do a git push &lt;proxy&gt; master:refs/for/mailinglist
+&gt; and this proxy would convert the push into sending patch series to the
+&gt; mailing list. It could even convert the following discussion back into
+&gt; comments (on Github?) but as a first step we'd want to try out a one
+&gt; way proxy.
+&gt;
+&gt; Unfortunately nobody stepped up to actually do the work, yet :(
+
+
+Hello, I'm stepping up to do that work :) Or at least, I'm implementing a
+one-way GitHub PR -&gt; Mailing list tool, called submitGit:
+
+<a href="https://submitgit.herokuapp.com/" rel="nofollow">https://submitgit.herokuapp.com/</a>
+
+Here's what a user does:
+
+* create a PR on <a href="https://github.com/git/git" rel="nofollow">https://github.com/git/git</a>
+* logs into <a href="https://submitgit.herokuapp.com/" rel="nofollow">https://submitgit.herokuapp.com/</a> with GitHub auth
+* selects their PR on <a href="https://submitgit.herokuapp.com/git/git/pulls" rel="nofollow">https://submitgit.herokuapp.com/git/git/pulls</a>
+* gets submitGit to email the PR as patches to themselves, in order to
+check it looks ok
+* when they're ready, get submitGit to send it to the mailing list on
+their behalf
+
+All discussion of the patch *stays* on the mailing list - I'm not
+attempting to change
+anything about the Git community process, other than make it easier
+for a wider group
+people to submit patches to the list.
+
+For hard-core contributors to Git, I'd imagine that git format-patch &amp;
+send-email
+remain the fastest way to do their work. But those tools are _unfamiliar to the
+majority of Git users_ - so submitGit aims to cater to those users, because they
+definitely have valuable contributions to make, which would be tragic
+to throw away.
+
+I've been working on submitGit in my spare time for the past few
+weeks, and there
+are still features I plan to add (like guiding the user to more
+'correct' word wrapping,
+sign-off, etc), but given this discussion, I wanted to chime in and
+let people know
+what's here so far. It would be great if people could take the time to
+explore the tool
+(you don't have to raise a git/git PR in order to try sending one *to
+yourself*, for
+instance) and give feedback on list, or in GitHub issues:
+
+<a href="https://github.com/rtyley/submitgit/issues" rel="nofollow">https://github.com/rtyley/submitgit/issues</a>
+
+I've been lucky enough to discuss the ideas around submitGit with a
+few people at
+the Git-Merge conf, so thanks to Peff, Thomas Ferris Nicolaisen, and Emma Jane
+Hogbin Westby for listening to me (not to imply their endorsement of
+what I've done,
+just thanks for talking about it!).
+
+Roberto
+--
+To unsubscribe from this list: send the line "unsubscribe git" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  <a href="http://vger.kernel.org/majordomo-info.html" rel="nofollow">http://vger.kernel.org/majordomo-info.html</a>
+<b>[<a href="?l=git&m=143227875111419&w=2">prev in list</a>] [<a href="?l=git&m=143228376712745&w=2">next in list</a>] [<font color="#c0c0c0">prev in thread</font>] [<a href="?l=git&m=143228779114040&w=2">next in thread</a>] </b>
+</pre>
+  </pre><br><center>
+    <a href="?q=configure">Configure</a> | 
+
+    <a href="?q=about">About</a> |
+    <a href="?q=news">News</a> |
+    <a href="mailto:webguy@marc.info?subject=Add%20a%20list%20to%20MARC">Add&nbsp;a&nbsp;list</a> |
+    Sponsored&nbsp;by&nbsp;<a href="http://www.korelogic.com/">KoreLogic</a>
+</center>
+</body>
+</html>

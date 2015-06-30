@@ -1,17 +1,15 @@
-@(addresses: lib.Email.Addresses)
-@display(label: String, ids: Seq[String]) = {
+@(addresses: lib.Email.Addresses)(implicit fc : views.html.b3.B3FieldConstructor)
+
+
+    @display(label: String, ids: Seq[String]) = {
     @if(ids.nonEmpty) {
-        <label class="col-sm-4 control-label">@label</label>
-        <div class="col-sm-8">
-            <p class="form-control-static">@ids.mkString(", ")</p>
-        </div>
+        @b3.static(label) { @ids.mkString(", ")}
+
     }
 }
 
-<div class="form-group">
     @display("From", Seq(addresses.from))
     @display("To", addresses.to)
     @display("Cc", addresses.cc)
     @display("Bcc", addresses.bcc)
     @display("Reply-To", addresses.replyTo.toSeq)
-</div>

@@ -19,6 +19,14 @@ object PatchParsing {
 
   val patchHeaderRegion: P[ObjectId] = P(patchFromHeader ~! nonEmptyLine.rep)
 
+  val headerKey = P(CharsWhile(_ != ':', min = 1).! ~ ": ")
+
+  val headerValue = P((CharsWhile(_ != '\n', min = 1) ~ ("\n" ~ " ".rep(min = 1) ~ CharsWhile(_ != '\n', min = 1)).rep).!)
+
+  val header: P[(String, String)] = P(headerKey ~ headerValue)
+
+  val headers: P[Seq[(String, String)]] = P(header.rep(sep = "\n"))
+
   val patchBodyRegion = P((line ~ !patchFromHeader).rep.!)
 
   val patch: P[Patch] = P(patchHeaderRegion ~ "\n" ~! patchBodyRegion).map(Patch.tupled)
