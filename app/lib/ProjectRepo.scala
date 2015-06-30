@@ -8,7 +8,8 @@ object Project {
   val Git = Project(
     RepoId("git", "git"),
     MailingList("git@vger.kernel.org", Seq(
-      Gmane.Git
+      Gmane.Git,
+      Marc.Git
       // MailArchiveDotCom("git@vger.kernel.org") -- message-id search appears broken
     ))
   )

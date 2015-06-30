@@ -1,6 +1,10 @@
 package lib
 
+import javax.mail.internet.MailDateFormat
+
 import org.specs2.mutable.Specification
+
+import scalax.io.Resource
 
 class MailArchiveSpec extends Specification {
   "Google Groups" should {
@@ -24,6 +28,17 @@ class MailArchiveSpec extends Specification {
     "have a proper link for a message-id" in {
       Gmane.Git.linkFor("1431830650-111684-1-git-send-email-shawn@churchofgit.com").toString mustEqual
         "http://mid.gmane.org/1431830650-111684-1-git-send-email-shawn@churchofgit.com"
+    }
+  }
+  "MARC" should {
+    "have MessageSummary parsed (totally hackishly) from html - because the alternate raw version excludes headers" in {
+      val message =
+        Marc.messageSummaryFor(Resource.fromClasspath("samples/mailarchives/marc/m.143228360912708.html").string)
+
+      message.id mustEqual "CAFY1edY3+Wt-p2iQ5k64Fg-nMk2PmRSvhVkQSVNw94R18uPV2Q@mail.gmail.com"
+      message.date.toInstant mustEqual new MailDateFormat().parse("Fri, 22 May 2015 09:33:20 +0100").toInstant
+      message.subject mustEqual
+        "[Announce] submitGit for patch submission (was \"Diffing submodule does not yield complete logs\")"
     }
   }
 }

@@ -10,17 +10,17 @@ import lib.actions.Actions._
 import lib.actions.Requests._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
-import lib.model.{PatchBomb, PatchCommit, Patch}
+import lib.model.PatchBomb
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.i18n.Messages.Implicits._
 import play.api.libs.json.Json
 import play.api.libs.json.Json._
 import play.api.mvc._
 import views.html.pullRequestSent
-import play.api.i18n.Messages.Implicits._
 
 import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -85,7 +85,8 @@ object Application extends Controller {
 
   val mailSettingsForm = Form(
     mapping(
-      "subjectPrefix" -> default(text(maxLength = 20), "PATCH")
+      "subjectPrefix" -> default(text(maxLength = 20), "PATCH"),
+      "inReplyTo" -> optional(text)
     )(PRMailSettings.apply)(PRMailSettings.unapply)
   )
 
@@ -99,14 +100,16 @@ object Application extends Controller {
       
       for (patchCommits <- req.patchCommitsF) yield {
         val patchBomb = PatchBomb(patchCommits, addresses, settings.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
-        for (initialMessageId <- ses.send(patchBomb.emails.head)) {
+        val initialEmail = patchBomb.emails.head
+        val initialEmailWithReply = settings.inReplyTo.fold(initialEmail)(initialEmail.inReplyTo)
+        for (initialMessageId <- ses.send(initialEmailWithReply)) {
           for (email <- patchBomb.emails.drop(1)) {
             ses.send(email.inReplyTo(initialMessageId))
           }
 
           mailType.afterSending(req.pr, initialMessageId)
         }
-        Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> Json.toJson(settings).toString)
+        Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> toJson(settings).toString)
       }
   }
 
