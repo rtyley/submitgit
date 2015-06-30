@@ -7,7 +7,7 @@ import com.madgag.playgithub.auth.GHRequest
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import lib._
-import lib.model.{UserIdent, Commit, PatchCommit}
+import lib.model.{Commit, PatchCommit, UserIdent}
 import org.kohsuke.github.{GHPullRequest, GHRepository, GitHub}
 import play.api.mvc.Request
 
