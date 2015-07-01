@@ -2,11 +2,11 @@ package lib
 
 import javax.mail.internet.MailDateFormat
 
-import org.specs2.mutable.Specification
+import org.scalatestplus.play.PlaySpec
 
 import scalax.io.Resource
 
-class MailArchiveSpec extends Specification {
+class MailArchiveSpec extends PlaySpec {
   "Google Groups" should {
     val submitGitGoogleGroup = GoogleGroup("submitgit-test")
 

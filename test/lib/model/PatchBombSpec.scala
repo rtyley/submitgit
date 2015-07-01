@@ -2,9 +2,9 @@ package lib.model
 
 import lib.Email.Addresses
 import org.eclipse.jgit.lib.ObjectId
-import org.specs2.mutable.Specification
+import org.scalatestplus.play.PlaySpec
 
-class PatchBombSpec extends Specification {
+class PatchBombSpec extends PlaySpec {
   val patchCommit = {
     val author = UserIdent("bob", "bob@x.com")
     PatchCommit(Patch(ObjectId.zeroId, "PATCHBODY"), Commit(ObjectId.zeroId, author, author, "COMMITMESSAGE"))
