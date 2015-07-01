@@ -3,11 +3,11 @@ package lib
 import com.madgag.git._
 import fastparse._
 import lib.model.PatchParsing
-import org.specs2.mutable.Specification
+import org.scalatestplus.play.PlaySpec
 
 import scalax.io.Resource
 
-class PatchParsingSpec extends Specification {
+class PatchParsingSpec extends PlaySpec {
 
   val pull187PatchesText = Resource.fromClasspath("samples/bfg/pull87/github.patch").string
 

@@ -46,8 +46,7 @@ libraryDependencies ++= Seq(
   "org.jsoup" % "jsoup" % "1.8.2",
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
-  "org.specs2" %% "specs2-core" % "2.4.17" % "test",
-  "org.specs2" %% "specs2-junit" % "2.4.17" % "test",
+  "org.scalatestplus" %% "play" % "1.4.0-M3",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.9.37",
   "com.sun.mail" % "javax.mail" % "1.5.3"
 )
