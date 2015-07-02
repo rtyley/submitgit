@@ -1,6 +1,6 @@
 package lib.model
 
-import fastparse._
+import fastparse.all._
 import org.eclipse.jgit.lib.ObjectId
 
 case class Patch(commitId: ObjectId, body: String)

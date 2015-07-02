@@ -2,6 +2,7 @@ package lib
 
 import com.madgag.git._
 import fastparse._
+import fastparse.core.Result
 import lib.model.PatchParsing
 import org.scalatestplus.play.PlaySpec
 

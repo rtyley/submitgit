@@ -1,6 +1,6 @@
 package lib.model
 
-import fastparse._
+import fastparse.all._
 
 case class PatchCommit(patch: Patch, commit: Commit)
 

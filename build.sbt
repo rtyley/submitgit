@@ -42,7 +42,7 @@ libraryDependencies ++= Seq(
   "org.webjars.bower" % "typeahead.js" % "0.11.1",
   "org.webjars.bower" % "typeahead.js-bootstrap3.less" % "0.2.3",
   "org.webjars.npm" % "handlebars" % "3.0.3",
-  "com.lihaoyi" %% "fastparse" % "0.1.7",
+  "com.lihaoyi" %% "fastparse" % "0.2.1",
   "org.jsoup" % "jsoup" % "1.8.2",
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
