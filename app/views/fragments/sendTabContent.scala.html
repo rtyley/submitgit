@@ -26,7 +26,7 @@
         @CSRF.formField
 
     @b3.inputWrapped("text", prMailSettings("subjectPrefix"), '_label -> "Subject prefix", 'placeholder -> "PATCH", 'maxlength -> "20") { input =>
-        <div class="input-group">
+        <div class="input-group" id="@mailType.slug-subject-prefix">
             <span class="input-group-addon">[</span>
             @input
             <span class="input-group-addon">]</span>
@@ -51,7 +51,8 @@
         @fragments.mailIdent(MessageSummary("{{id}}", "{{subject}}", java.time.ZonedDateTime.now, Addresses("{{addresses.from}}"), "{{groupLink}}"))
     </script>
     <script>
-        jQuery("#@mailType.slug-in-reply-to").messageIdPicker({
+        var inReplyToFieldContainer = jQuery("#@mailType.slug-in-reply-to");
+        inReplyToFieldContainer.messageIdPicker({
             hint: true,
             highlight: true,
             minLength: 3,
@@ -71,6 +72,9 @@
                 empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',
                 suggestion: Handlebars.compile(jQuery("#entry-template").html())
             }
+        });
+        inReplyToFieldContainer.find(".input-group .typeahead").bind('typeahead:select', function (ev, suggestion) {
+            jQuery("#@mailType.slug-subject-prefix input").changeVal(suggestion.suggestsPrefix);
         });
     </script>
 

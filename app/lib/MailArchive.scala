@@ -11,19 +11,36 @@ import com.squareup.okhttp.OkHttpClient
 import controllers.Application._
 import fastparse.core.Result
 import lib.Email.Addresses
-import lib.model.PatchParsing
+import lib.model.{SubjectPrefixParsing, PatchParsing}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import play.api.libs.json.Json
+import play.api.libs.json._
 
 import scala.collection.convert.wrapAsScala._
 import scala.concurrent.{ExecutionContext, Future}
 
-case class MessageSummary(id: String, subject: String, date: ZonedDateTime, addresses: Addresses, groupLink: String)
+case class MessageSummary(
+  id: String,
+  subject: String,
+  date: ZonedDateTime,
+  addresses: Addresses,
+  groupLink: String
+) {
+  lazy val suggestedPrefixForNextPatchBombOpt: Option[String] =
+    SubjectPrefixParsing.parse(subject).map(_.suggestsNext.toString)
+}
 
 object MessageSummary {
-  implicit val formatsAddresses = Json.format[Addresses]
-  implicit val formatsMessageSummary = Json.format[MessageSummary]
+  implicit val writesAddresses = Json.writes[Addresses]
+  implicit val writesMessageSummary = new Writes[MessageSummary] {
+    override def writes(o: MessageSummary): JsValue = {
+      val suggestion = for {
+        prefix <- o.suggestedPrefixForNextPatchBombOpt
+      } yield "suggestsPrefix" -> JsString(prefix)
+
+      Json.writes[MessageSummary].writes(o).asInstanceOf[JsObject] ++ JsObject(suggestion.toSeq)
+    }
+  }
 
   def fromRawMessage(rawMessage: String, articleUrl: String): MessageSummary = {
     val Result.Success(headers, _) = PatchParsing.headers.parse(rawMessage)
