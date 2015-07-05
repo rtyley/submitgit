@@ -46,3 +46,16 @@ pre .long {
 .tt-dropdown-menu .tt-suggestion {
     white-space: normal;
 }
+
+@keyframes highlight {
+    0% {
+        background: yellow;
+    }
+    100% {
+        background: none;
+    }
+}
+
+.highlighter {
+    animation: highlight 1s;
+}
