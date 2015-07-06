@@ -21,11 +21,17 @@ object PatchParsing {
 
   val headerKey = P(CharsWhile(_ != ':', min = 1).! ~ ": ")
 
-  val headerValue = P((CharsWhile(_ != '\n', min = 1) ~ ("\n" ~ " ".rep(min = 1) ~ CharsWhile(_ != '\n', min = 1)).rep).!)
+  val newlineChars = Set('\n', '\r')
+
+  val newline = "\r\n" | "\n"
+
+  val nonNewlineChars = CharsWhile(!newlineChars(_), min = 1)
+
+  val headerValue = P((nonNewlineChars ~ ("\n" ~ " ".rep(min = 1) ~ nonNewlineChars).rep).!)
 
   val header: P[(String, String)] = P(headerKey ~ headerValue)
 
-  val headers: P[Seq[(String, String)]] = P(header.rep(sep = "\n"))
+  val headers: P[Seq[(String, String)]] = P(header.rep(sep = newline))
 
   val patchBodyRegion = P((line ~ !patchFromHeader).rep.!)
 

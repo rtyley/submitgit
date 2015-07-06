@@ -45,6 +45,7 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "fastparse" % "0.2.1",
   "org.jsoup" % "jsoup" % "1.8.2",
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
+  "com.netaporter" %% "scala-uri" % "0.4.7",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
   "org.scalatestplus" %% "play" % "1.4.0-M3",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.9.37",

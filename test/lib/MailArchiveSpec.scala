@@ -2,11 +2,28 @@ package lib
 
 import javax.mail.internet.MailDateFormat
 
+import com.madgag.okhttpscala._
+import com.netaporter.uri.dsl._
+import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.Request.Builder
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
 
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Try
 import scalax.io.Resource
 
-class MailArchiveSpec extends PlaySpec {
+object Network {
+  import scala.concurrent.duration._
+  
+  val okClient = new OkHttpClient()
+  val secureGoogleRequest = new Builder().url("https://www.google.com/").build()
+
+  def isAvailable: Boolean = Try(Await.result(okClient.execute(secureGoogleRequest), 1 second).isSuccessful).getOrElse(false)
+}
+
+class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatience {
   "Google Groups" should {
     val submitGitGoogleGroup = GoogleGroup("submitgit-test")
 
@@ -23,11 +40,38 @@ class MailArchiveSpec extends PlaySpec {
     "derive correct email address" in {
       submitGitGoogleGroup.emailAddress mustEqual "submitgit-test@googlegroups.com"
     }
+    "give correct raw article url" in {
+      submitGitGoogleGroup.rawUrlFor("/forum/#!msg/submitgit-test/-cq4q1w7jyY/A-EH61BAZaUJ").toString mustEqual
+        "https://groups.google.com/forum/message/raw?msg=submitgit-test/-cq4q1w7jyY/A-EH61BAZaUJ"
+    }
+    "get message data" in {
+      assume(Network.isAvailable)
+      val messageId = "349d78e1-3c4f-4415-908d-599a57d15008@googlegroups.com"
+      whenReady(submitGitGoogleGroup.lookupMessage(messageId)) { s =>
+        val messageSummary = s.head
+        messageSummary.id mustEqual messageId
+        messageSummary.subject mustEqual "Chalk"
+      }
+
+    }
   }
   "Gmane" should {
     "have a proper link for a message-id" in {
       Gmane.Git.linkFor("1431830650-111684-1-git-send-email-shawn@churchofgit.com").toString mustEqual
         "http://mid.gmane.org/1431830650-111684-1-git-send-email-shawn@churchofgit.com"
+    }
+    "give correct raw article url" in {
+      Gmane.Git.rawUrlFor("http://article.gmane.org/gmane.comp.version-control.git/269205").toString mustEqual
+        "http://article.gmane.org/gmane.comp.version-control.git/269205/raw"
+    }
+    "get message data" in {
+      assume(Network.isAvailable)
+      val messageId = "1431830650-111684-1-git-send-email-shawn@churchofgit.com"
+      whenReady(Gmane.Git.lookupMessage(messageId)) { s =>
+        val messageSummary = s.head
+        messageSummary.id mustEqual messageId
+        messageSummary.subject mustEqual "[PATCH] daemon: add systemd support"
+      }
     }
   }
   "MARC" should {

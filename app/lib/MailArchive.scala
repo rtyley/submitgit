@@ -6,18 +6,22 @@ import java.time.{LocalDateTime, ZoneId, ZonedDateTime}
 import javax.mail.internet.MailDateFormat
 
 import com.madgag.okhttpscala._
+import com.netaporter.uri.Uri
+import com.netaporter.uri.dsl._
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
 import controllers.Application._
 import fastparse.core.Result
 import lib.Email.Addresses
-import lib.model.{SubjectPrefixParsing, PatchParsing}
+import lib.model.{PatchParsing, SubjectPrefixParsing}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import play.api.libs.json._
 
 import scala.collection.convert.wrapAsScala._
+import scala.collection.immutable.SortedMap
 import scala.concurrent.{ExecutionContext, Future}
+import scala.math.Ordering.comparatorToOrdering
 
 case class MessageSummary(
   id: String,
@@ -31,6 +35,9 @@ case class MessageSummary(
 }
 
 object MessageSummary {
+
+  val caseInsensitiveOrdering = comparatorToOrdering(String.CASE_INSENSITIVE_ORDER)
+
   implicit val writesAddresses = Json.writes[Addresses]
   implicit val writesMessageSummary = new Writes[MessageSummary] {
     override def writes(o: MessageSummary): JsValue = {
@@ -44,9 +51,8 @@ object MessageSummary {
 
   def fromRawMessage(rawMessage: String, articleUrl: String): MessageSummary = {
     val Result.Success(headers, _) = PatchParsing.headers.parse(rawMessage)
-    val headerMap = headers.toMap
-
-    val messageId = headerMap("Message-ID").stripPrefix("<").stripSuffix(">")
+    val headerMap = SortedMap(headers: _*)(caseInsensitiveOrdering)
+    val messageId = headerMap("Message-Id").stripPrefix("<").stripSuffix(">")
     val from = headerMap("From")
     val date = new MailDateFormat().parse(headerMap("Date")).toInstant.atZone(ZoneId.of("UTC"))
     MessageSummary(messageId, headerMap("Subject"), date, Addresses(from), articleUrl)
@@ -60,11 +66,11 @@ object RedirectCapturer {
     c
   }
 
-  def redirectFor(url: String)(implicit ec: ExecutionContext): Future[Option[String]] = for {
+  def redirectFor(url: String)(implicit ec: ExecutionContext): Future[Option[Uri]] = for {
     resp <- okClient.execute(new okhttp.Request.Builder().url(url).build())
   } yield {
     resp.code match {
-      case FOUND => Some(resp.header(LOCATION))
+      case FOUND => Some(Uri.parse(resp.header(LOCATION)))
       case _ => None
     }
   }
@@ -81,34 +87,36 @@ trait MailArchive {
   def lookupMessage(query: String)(implicit ec: ExecutionContext): Future[Seq[MessageSummary]] = Future.successful(Seq.empty)
 }
 
-case class Gmane(groupName: String) extends MailArchive {
+trait MessageSummaryByRawResourceFromRedirect extends MailArchive {
+  def rawUrlFor(articleUrl: Uri): Uri
+
+  override def lookupMessage(query: String)(implicit ec: ExecutionContext): Future[Seq[MessageSummary]] = {
+    for {
+      articleUriOpt <- RedirectCapturer.redirectFor(linkFor(query))
+      messageSummaryOpt <- messageSummaryBasedOn(articleUriOpt)
+    } yield messageSummaryOpt.toSeq
+  }
+
+  def messageSummaryBasedOn(articleUriOpt: Option[Uri])(implicit ec: ExecutionContext): Future[Option[MessageSummary]] = {
+    articleUriOpt match {
+      case Some(articleUrl) =>
+        val okClient = new OkHttpClient()
+        for {
+          resp <- okClient.execute(new okhttp.Request.Builder().url(rawUrlFor(articleUrl)).build())
+        } yield Some(MessageSummary.fromRawMessage(resp.body.string, articleUrl))
+      case None => Future.successful(None)
+    }
+  }
+}
+
+case class Gmane(groupName: String) extends MailArchive with MessageSummaryByRawResourceFromRedirect {
   val providerName = "Gmane"
 
   val url = s"http://dir.gmane.org/gmane.$groupName"
 
   def linkFor(messageId: String) = s"http://mid.gmane.org/$messageId"
 
-  override def lookupMessage(query: String)(implicit ec: ExecutionContext) = {
-    for {
-      gmaneArticleUrlOpt <- gmaneArticleUrlFor(query)
-      gmaneRawArticleOpt <- gmaneRawArticleFor(gmaneArticleUrlOpt)
-    } yield gmaneRawArticleOpt.toSeq
-  }
-
-  def gmaneRawArticleFor(articleUrlOpt: Option[String])(implicit ec: ExecutionContext): Future[Option[MessageSummary]] = {
-    articleUrlOpt match {
-      case Some(articleUrl) =>
-        val okClient = new OkHttpClient()
-        for {
-          resp <- okClient.execute(new okhttp.Request.Builder().url(articleUrl+"/raw").build())
-        } yield Some(MessageSummary.fromRawMessage(resp.body.string, articleUrl))
-      case None => Future.successful(None)
-    }
-  }
-
-  def gmaneArticleUrlFor(messageId: String)(implicit ec: ExecutionContext): Future[Option[String]] =
-    RedirectCapturer.redirectFor(linkFor(messageId))
-
+  override def rawUrlFor(articleUrl: Uri) = articleUrl / "raw"
 }
 
 object Marc {
@@ -150,10 +158,10 @@ case class Marc(groupName: String) extends MailArchive {
     } yield articleMessageSummaryOpt.map(_.copy(id = query)).toSeq
   }
 
-  def articleUrl(messageId: String)(implicit ec: ExecutionContext): Future[Option[String]] =
+  def articleUrl(messageId: String)(implicit ec: ExecutionContext): Future[Option[Uri]] =
     RedirectCapturer.redirectFor(linkFor(messageId))
 
-  def messageSummaryFor(articleUrlOpt: Option[String])(implicit ec: ExecutionContext): Future[Option[MessageSummary]] = {
+  def messageSummaryFor(articleUrlOpt: Option[Uri])(implicit ec: ExecutionContext): Future[Option[MessageSummary]] = {
     articleUrlOpt match {
       case Some(articleUrl) =>
         val okClient = new OkHttpClient()
@@ -178,7 +186,7 @@ case class MailArchiveDotCom(emailAddress: String) extends MailArchive {
   def linkFor(messageId: String) = s"http://mid.mail-archive.com/$messageId"
 }
 
-case class GoogleGroup(groupName: String) extends MailArchive {
+case class GoogleGroup(groupName: String) extends MailArchive with MessageSummaryByRawResourceFromRedirect {
 
   val providerName = "Google Groups"
 
@@ -191,4 +199,10 @@ case class GoogleGroup(groupName: String) extends MailArchive {
   val emailAddress = s"$groupName@googlegroups.com"
 
   val mailingList = MailingList(emailAddress, Seq(this))
+
+  /* redirect: /forum/#!msg/submitgit-test/-cq4q1w7jyY/fLlC47tosH4J
+   * raw resource: https://groups.google.com/forum/message/raw?msg=submitgit-test/-cq4q1w7jyY/A-EH61BAZaUJ
+   */
+  override def rawUrlFor(articleUrl: Uri): Uri =
+    "https://groups.google.com/forum/message/raw?msg="+articleUrl.fragment.get.stripPrefix("!msg/")
 }
