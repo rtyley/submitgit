@@ -2,62 +2,22 @@ package lib
 
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.ChronoField._
-import java.time.{LocalDateTime, ZoneId, ZonedDateTime}
-import javax.mail.internet.MailDateFormat
+import java.time.{LocalDateTime, ZoneId}
 
 import com.madgag.okhttpscala._
 import com.netaporter.uri.Uri
 import com.netaporter.uri.dsl._
 import com.squareup.okhttp
 import com.squareup.okhttp.OkHttpClient
+import com.squareup.okhttp.Request.Builder
 import controllers.Application._
-import fastparse.core.Result
 import lib.Email.Addresses
-import lib.model.{PatchParsing, SubjectPrefixParsing}
+import lib.model.MessageSummary
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import play.api.libs.json._
 
 import scala.collection.convert.wrapAsScala._
-import scala.collection.immutable.SortedMap
 import scala.concurrent.{ExecutionContext, Future}
-import scala.math.Ordering.comparatorToOrdering
-
-case class MessageSummary(
-  id: String,
-  subject: String,
-  date: ZonedDateTime,
-  addresses: Addresses,
-  groupLink: String
-) {
-  lazy val suggestedPrefixForNextPatchBombOpt: Option[String] =
-    SubjectPrefixParsing.parse(subject).map(_.suggestsNext.toString)
-}
-
-object MessageSummary {
-
-  val caseInsensitiveOrdering = comparatorToOrdering(String.CASE_INSENSITIVE_ORDER)
-
-  implicit val writesAddresses = Json.writes[Addresses]
-  implicit val writesMessageSummary = new Writes[MessageSummary] {
-    override def writes(o: MessageSummary): JsValue = {
-      val suggestion = for {
-        prefix <- o.suggestedPrefixForNextPatchBombOpt
-      } yield "suggestsPrefix" -> JsString(prefix)
-
-      Json.writes[MessageSummary].writes(o).asInstanceOf[JsObject] ++ JsObject(suggestion.toSeq)
-    }
-  }
-
-  def fromRawMessage(rawMessage: String, articleUrl: String): MessageSummary = {
-    val Result.Success(headers, _) = PatchParsing.headers.parse(rawMessage)
-    val headerMap = SortedMap(headers: _*)(caseInsensitiveOrdering)
-    val messageId = headerMap("Message-Id").stripPrefix("<").stripSuffix(">")
-    val from = headerMap("From")
-    val date = new MailDateFormat().parse(headerMap("Date")).toInstant.atZone(ZoneId.of("UTC"))
-    MessageSummary(messageId, headerMap("Subject"), date, Addresses(from), articleUrl)
-  }
-}
 
 object RedirectCapturer {
   val okClient = {
@@ -101,8 +61,9 @@ trait MessageSummaryByRawResourceFromRedirect extends MailArchive {
     articleUriOpt match {
       case Some(articleUrl) =>
         val okClient = new OkHttpClient()
+        val rawUrl = rawUrlFor(articleUrl)
         for {
-          resp <- okClient.execute(new okhttp.Request.Builder().url(rawUrlFor(articleUrl)).build())
+          resp <- okClient.execute(new Builder().url(rawUrl).build())
         } yield Some(MessageSummary.fromRawMessage(resp.body.string, articleUrl))
       case None => Future.successful(None)
     }

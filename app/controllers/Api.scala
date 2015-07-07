@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import com.madgag.github.RepoId
 import lib._
+import lib.model.MessageSummary
 import play.api.cache.Cached
 import play.api.libs.json.Json._
 import play.api.mvc._

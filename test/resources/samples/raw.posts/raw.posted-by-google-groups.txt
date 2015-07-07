@@ -1,0 +1,27 @@
+Date: Tue, 30 Jun 2015 14:01:44 -0700 (PDT)
+From: Roberto Tyley <robert...@gmail.com>
+To: submitgit-test@googlegroups.com
+Message-Id: <f068b1d6-4889-41bd-b8ed-1081b629594a@googlegroups.com>
+Subject: Scary fudge
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_112_1073874982.1435698104974"
+
+------=_Part_112_1073874982.1435698104974
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_113_1164253086.1435698104974"
+
+------=_Part_113_1164253086.1435698104974
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Does this make sense?
+
+------=_Part_113_1164253086.1435698104974
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<div dir="ltr">Does this make sense?</div>
+------=_Part_113_1164253086.1435698104974--
+
+------=_Part_112_1073874982.1435698104974--

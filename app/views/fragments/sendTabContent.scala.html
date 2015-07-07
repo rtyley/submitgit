@@ -1,6 +1,5 @@
-@import java.time.Instant
-@import lib.MessageSummary
 @import lib.Email.Addresses
+@import lib.model.MessageSummary
 @(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String
         )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @import helper._

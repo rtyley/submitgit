@@ -1,0 +1,65 @@
+X-Received: by 10.180.77.225 with SMTP id v1mr6964442wiw.5.1436284425893;
+        Tue, 07 Jul 2015 08:53:45 -0700 (PDT)
+X-BeenThere: submitgit-test@googlegroups.com
+Received: by 10.152.179.39 with SMTP id dd7ls837412lac.60.gmail; Tue, 07 Jul
+ 2015 08:53:45 -0700 (PDT)
+X-Received: by 10.112.26.5 with SMTP id h5mr2431122lbg.4.1436284425520;
+        Tue, 07 Jul 2015 08:53:45 -0700 (PDT)
+Return-Path: <0000014e69391015-5de3c8c6-458f...@eu-west-1.amazonses.com>
+Received: from a7-11.smtp-out.eu-west-1.amazonses.com (a7-11.smtp-out.eu-west-1.amazonses.com. [54.240.7.11])
+        by gmr-mx.google.com with ESMTPS id eo3si1863304wib.0.2015.07.07.08.53.45
+        for <submitg...@googlegroups.com>
+        (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+        Tue, 07 Jul 2015 08:53:45 -0700 (PDT)
+Received-SPF: pass (google.com: domain of 0000014e69391015-5de3c8c6-458f...@eu-west-1.amazonses.com designates 54.240.7.11 as permitted sender) client-ip=54.240.7.11;
+Authentication-Results: gmr-mx.google.com;
+       spf=pass (google.com: domain of 0000014e69391015-5de3c8c6-458f...@eu-west-1.amazonses.com designates 54.240.7.11 as permitted sender) smtp.mail=0000014e69391015-5de3c8c6-458f...@eu-west-1.amazonses.com;
+       dmarc=fail (p=NONE dis=NONE) header.from=gmail.com
+Authentication-Results: mx.google.com;
+       dkim=pass head...@amazonses.com
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+	s=uku4taia5b5tsbglxyj6zym32efj7xqv; d=amazonses.com; t=1436284424;
+	h=From:To:Message-ID:In-Reply-To:References:Subject:MIME-Version:Content-Type:Date:Feedback-ID;
+	bh=H19iXkkHtU+AKPoMRaIOnpNNFD88xZfTWt27yI8MRTw=;
+	b=XX0Ket/oYqGQqTELToem77+X/6xi0xwCsktgFb2fN5h2zwfB7PLoUyt5KGQzTq/P
+	WhGiRXBpKyMbDfhyODOVPpZgHw1IKNZVfGTF1pesar74iz20pWXWJOaFVBC/f4uTbEt
+	1z29Du+hokN8ldYiwD4P7HFEUO7n2Nr40pglPL1w=
+From: Roberto Tyley <robert...@gmail.com>
+To: submitgit-test@googlegroups.com
+Message-ID: <0000014e69391015-5de3c8c6-458f-4eb6-b222-14cfc8a6b055-000000@eu-west-1.amazonses.com>
+In-Reply-To: <349d78e1-3c4f-4415-908d-599a57d15008@googlegroups.com>
+References: <349d78e1-3c4f-4415-908d-599a57d15008@googlegroups.com>
+Subject: [PATCH/RFC v245] Update gc.c
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_4_1512894794.1436284424168"
+Date: Tue, 7 Jul 2015 15:53:44 +0000
+X-SES-Outgoing: 2015.07.07-54.240.7.11
+Feedback-ID: 1.eu-west-1.YYPRFFOog89kHDDPKvTu4MK67j4wW0z7cAgZtFqQH58=:AmazonSES
+
+------=_Part_4_1512894794.1436284424168
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Write something helpful here
+---
+ builtin/gc.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/builtin/gc.c b/builtin/gc.c
+index 5c634af..c8fcb4f 100644
+--- a/builtin/gc.c
++++ b/builtin/gc.c
+@@ -10,6 +10,8 @@
+  * Copyright (c) 2006 Shawn O. Pearce
+  */
+ 
++// some random test text - we should support a purge option, etc...
++
+ #include "builtin.h"
+ #include "lockfile.h"
+ #include "parse-options.h"
+
+---
+https://github.com/submitgit/pretend-git/pull/1
+------=_Part_4_1512894794.1436284424168--

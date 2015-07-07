@@ -52,7 +52,15 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
         messageSummary.id mustEqual messageId
         messageSummary.subject mustEqual "Chalk"
       }
-
+    }
+    "get '[PATCH/RFC v245] Update gc.c' message data posted by submitGit using AWS SES" in {
+      assume(Network.isAvailable)
+      val messageId = "0000014e69391015-5de3c8c6-458f-4eb6-b222-14cfc8a6b055-000000@eu-west-1.amazonses.com"
+      whenReady(submitGitGoogleGroup.lookupMessage(messageId)) { s =>
+        val messageSummary = s.head
+        messageSummary.id mustEqual messageId
+        messageSummary.subject mustEqual "[PATCH/RFC v245] Update gc.c"
+      }
     }
   }
   "Gmane" should {

@@ -25,9 +25,11 @@ object PatchParsing {
 
   val newline = "\r\n" | "\n"
 
+  val whitespace = P(CharIn(" \t"))
+
   val nonNewlineChars = CharsWhile(!newlineChars(_), min = 1)
 
-  val headerValue = P((nonNewlineChars ~ ("\n" ~ " ".rep(min = 1) ~ nonNewlineChars).rep).!)
+  val headerValue = P((nonNewlineChars ~ (newline ~ whitespace.rep(min = 1) ~ nonNewlineChars).rep).!)
 
   val header: P[(String, String)] = P(headerKey ~ headerValue)
 
