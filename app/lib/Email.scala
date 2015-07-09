@@ -50,20 +50,11 @@ case class Email(
     headers.foreach(t => msg.addHeader(t._1, t._2))
     addresses.replyTo.foreach(r => msg.setReplyTo(Array(new InternetAddress(r))))
 
-    // Add a MIME part to the message
-    val mp = new MimeMultipart()
-
-    val part = new MimeBodyPart()
-    part.setContent(bodyText, "text/plain")
-    mp.addBodyPart(part)
-
-    msg.setContent(mp)
+    msg.setText(bodyText)
 
     val b = new ByteArrayOutputStream()
 
     msg.writeTo(b)
-
-    msg.writeTo(System.out);
 
     ByteBuffer.wrap(b.toByteArray)
 
