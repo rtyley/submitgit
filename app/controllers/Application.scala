@@ -98,18 +98,17 @@ object Application extends Controller {
 
       val settings = req.body
       
-      for (patchCommits <- req.patchCommitsF) yield {
-        val patchBomb = PatchBomb(patchCommits, addresses, settings.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
-        val initialEmail = patchBomb.emails.head
-        val initialEmailWithReply = settings.inReplyTo.fold(initialEmail)(initialEmail.inReplyTo)
-        for (initialMessageId <- ses.send(initialEmailWithReply)) {
-          for (email <- patchBomb.emails.drop(1)) {
-            ses.send(email.inReplyTo(initialMessageId))
-          }
-
-          mailType.afterSending(req.pr, initialMessageId)
+      for {
+        patchCommits <- req.patchCommitsF
+        patchBomb = PatchBomb(patchCommits, addresses, settings.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
+        initialEmail = patchBomb.emails.head
+        initialMessageId <- ses.send(settings.inReplyTo.fold(initialEmail)(initialEmail.inReplyTo))
+      } yield {
+        for (email <- patchBomb.emails.tail) {
+          ses.send(email.inReplyTo(initialMessageId))
         }
-        Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> toJson(settings).toString)
+        val updatedSettings = mailType.afterSending(req.pr, initialMessageId, settings)
+        Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> toJson(updatedSettings).toString)
       }
   }
 

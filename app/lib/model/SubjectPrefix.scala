@@ -23,12 +23,14 @@ object SubjectPrefixParsing {
 
   val descriptor: P[String] = P( descriptorWord.rep(1, sep = " ").! )
 
-  val patchPrefix: P[SubjectPrefix] =
-    P( "[" ~ descriptor ~ (" " ~ version).? ~ (" " ~ patchIndexAndBombSize).map(_ => ()).? ~ "]").map(SubjectPrefix.tupled)
+  val patchPrefixContent: P[SubjectPrefix] =
+    P( descriptor ~ (" " ~ version).? ~ (" " ~ patchIndexAndBombSize).map(_ => ()).? ).map(SubjectPrefix.tupled)
 
-  def parse(subjectLine: String): Option[SubjectPrefix] = {
+  val subjectLine: P[SubjectPrefix] =
+    P( "[" ~ patchPrefixContent ~ "]")
 
-    patchPrefix.parse(subjectLine) match {
+  def parse(subjectLineText: String): Option[SubjectPrefix] = {
+    subjectLine.parse(subjectLineText) match {
       case Result.Success(subjectPrefix, _) => Some(subjectPrefix)
       case _ => None
     }

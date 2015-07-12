@@ -3,6 +3,7 @@ package lib
 import com.github.nscala_time.time.Imports._
 import com.madgag.github.Implicits._
 import controllers.routes
+import lib.PRMailSettings
 import lib.actions.Requests._
 import lib.checks.{Check, GHChecks, PRChecks}
 import org.kohsuke.github.{GHMyself, GHPullRequest}
@@ -12,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 sealed trait MailType {
-  def afterSending(pr: GHPullRequest, messageId: String)
+  def afterSending(pr: GHPullRequest, messageId: String, prMailSettings: PRMailSettings): PRMailSettings
 
   val slug: String
 
@@ -66,8 +67,9 @@ object MailType {
       HasAReasonableNumberOfCommits
     )
 
-    override def afterSending(request: GHPullRequest, messageId: String) {
+    override def afterSending(request: GHPullRequest, messageId: String, prMailSettings: PRMailSettings) = {
       // Nothing for preview
+      prMailSettings
     }
   }
 
@@ -105,11 +107,12 @@ object MailType {
       HasAReasonableNumberOfCommits
     )
 
-    override def afterSending(pr: GHPullRequest, messageId: String) {
+    override def afterSending(pr: GHPullRequest, messageId: String, prMailSettings: PRMailSettings) = {
       val mailingListLinks = Project.byRepoId(pr.id.repo).mailingList.archives.map(a => s"[${a.providerName}](${a.linkFor(messageId)})").mkString(", ")
       pr.comment(
         s"${pr.getUser.atLogin} sent this to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +
           s"here on $mailingListLinks []($messageId)")
+      prMailSettings.afterBeingUsedToSend(messageId)
     }
   }
 }
