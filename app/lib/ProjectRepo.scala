@@ -1,8 +1,14 @@
 package lib
 
 import com.madgag.github.RepoId
+import lib.model.MessageSummary
 
-case class MailingList(emailAddress: String, archives: Seq[MailArchive])
+import scala.concurrent.{ExecutionContext, Future}
+
+case class MailingList(emailAddress: String, archives: Seq[MailArchive]) {
+  def lookupMessage(query: String)(implicit ec: ExecutionContext): Future[Seq[MessageSummary]] =
+    Future.find(archives.map(_.lookupMessage(query)))(_.nonEmpty).map(_.toSeq.flatten)
+}
 
 object Project {
   val Git = Project(

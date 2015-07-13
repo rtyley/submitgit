@@ -16,10 +16,9 @@ class Api @Inject() (cached: Cached) extends Controller {
 
   def messageLookup(repoId: RepoId, query: String) = cached(s"$repoId $query") {
     Action.async {
-      val archives = Project.byRepoId(repoId).mailingList.archives
       for {
-        messagesOpt <- Future.find(archives.map(_.lookupMessage(query)))(_.nonEmpty)
-      } yield Ok(toJson(messagesOpt.toSeq.flatten: Seq[MessageSummary]))
+        messagesOpt <- Project.byRepoId(repoId).mailingList.lookupMessage(query)
+      } yield Ok(toJson(messagesOpt: Seq[MessageSummary]))
     }
   }
 
