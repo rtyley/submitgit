@@ -3,7 +3,6 @@ package lib
 import com.github.nscala_time.time.Imports._
 import com.madgag.github.Implicits._
 import controllers.routes
-import lib.PRMailSettings
 import lib.actions.Requests._
 import lib.checks.{Check, GHChecks, PRChecks}
 import org.kohsuke.github.{GHMyself, GHPullRequest}
