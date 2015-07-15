@@ -56,14 +56,16 @@
         var messageSuggestions = new Bloodhound({
             datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
             queryTokenizer: Bloodhound.tokenizers.whitespace,
-            // prefetch: routes.Api.pullRequestMessages(req.pr.id),
+            identify: function(obj) { return obj.id; },
+            prefetch: '@routes.Api.pullRequestMessages(req.pr.id)',
             remote: {
                 url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
                 wildcard: 'QUERY_STRING'
             }
         });
 
-        function messageSuggestionsWithDefaults(q, sync) {
+        var messageSuggestionsWithDefaults = function(q, sync) {
+          console.log("q = "+q);
           if (q === '') {
             sync(messageSuggestions.get(
                 @Html(JsArray(lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn(req.pr).take(3).map(JsString(_))).toString)
@@ -80,7 +82,18 @@
             classNames: {menu: 'tt-dropdown-menu'}
         }, {
             name: 'messageIds',
-            source: messageSuggestionsWithDefaults,
+            source: function(q, sync) {
+          console.log("q = "+q);
+          if (q === '') {
+            var bangooo = sync(messageSuggestions.get(
+                @Html(JsArray(lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn(req.pr).take(3).map(JsString(_))).toString)
+            ));
+            console.log("bangooo = "+bangooo);
+            bangooo;
+          } else {
+            messageSuggestions.search(q, sync);
+          }
+        },
             display: 'id',
             templates: {
                 empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',

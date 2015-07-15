@@ -12,7 +12,7 @@ GET         /oauth/callback                                      controllers.Aut
 GET         /logout                                              controllers.Auth.logout()
 
 GET         /api/$repo<[^/]+/[^/]+>/message-lookup               @controllers.Api.messageLookup(repo: com.madgag.github.RepoId, query: String)
-# GET         /api/$pr<[^/]+/[^/]+/pull/[\d]+>/messages            @controllers.Api.pullRequestMessages(pr: PullRequestId)
+GET         /api/$pr<[^/]+/[^/]+/pull/[\d]+>/messages            @controllers.Api.pullRequestMessages(pr: PullRequestId)
 
 
 # Map static resources from the /public folder to the /assets URL path
