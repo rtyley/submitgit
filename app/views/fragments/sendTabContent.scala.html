@@ -1,5 +1,7 @@
 @import lib.Email.Addresses
 @import lib.model.MessageSummary
+@import play.api.libs.json.JsArray
+@import play.api.libs.json.JsString
 @(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String
         )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @import helper._
@@ -51,21 +53,34 @@
     </script>
     <script>
         var inReplyToFieldContainer = jQuery("#@mailType.slug-in-reply-to");
+        var messageSuggestions = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            // prefetch: routes.Api.pullRequestMessages(req.pr.id),
+            remote: {
+                url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
+                wildcard: 'QUERY_STRING'
+            }
+        });
+
+        function messageSuggestionsWithDefaults(q, sync) {
+          if (q === '') {
+            sync(messageSuggestions.get(
+                @Html(JsArray(lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn(req.pr).take(3).map(JsString(_))).toString)
+            ));
+          } else {
+            messageSuggestions.search(q, sync);
+          }
+        }
+
         inReplyToFieldContainer.messageIdPicker({
             hint: true,
             highlight: true,
-            minLength: 3,
+            minLength: 0, // To allow default suggestions
             classNames: {menu: 'tt-dropdown-menu'}
         }, {
             name: 'messageIds',
-            source: new Bloodhound({
-                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
-                queryTokenizer: Bloodhound.tokenizers.whitespace,
-                remote: {
-                    url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
-                    wildcard: 'QUERY_STRING'
-                }
-            }),
+            source: messageSuggestionsWithDefaults,
             display: 'id',
             templates: {
                 empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',

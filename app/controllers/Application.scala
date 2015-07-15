@@ -1,6 +1,8 @@
 package controllers
 
 import java.io.{File, FileInputStream}
+import java.io.File
+import java.time.Instant
 
 import com.madgag.github.Implicits._
 import com.madgag.github.{PullRequestId, RepoId}
@@ -10,7 +12,8 @@ import lib.actions.Actions._
 import lib.actions.Requests._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
-import lib.model.PatchBomb
+import lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn
+import lib.model.{PRMessageIdFinder, PatchBomb}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -23,6 +26,7 @@ import play.api.mvc._
 import views.html.pullRequestSent
 
 import scala.collection.convert.wrapAll._
+import scala.collection.immutable.SortedMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Try
@@ -50,9 +54,8 @@ object Application extends Controller {
     val settings = (for {
       data <- req.session.get(prId.slug)
       s <- Json.parse(data).validate[PRMailSettings].asOpt
-    } yield s).getOrElse(PRMailSettings("PATCH"))
+    } yield s).getOrElse(PRMailSettings("PATCH", messageIdsByMostRecentUsageIn(req.pr).headOption))
 
-    req.session.get(prId.slug).map(Json.parse).map(fromJson[PRMailSettings](_).asOpt)
     implicit val form = mailSettingsForm.fill(settings)
     for (proposedMailByType <- proposedMailByTypeFor(req)) yield {
       Ok(views.html.reviewPullRequest(req.pr, myself, proposedMailByType))
