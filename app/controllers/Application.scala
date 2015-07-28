@@ -1,6 +1,6 @@
 package controllers
 
-import java.io.File
+import java.io.{File, FileInputStream}
 
 import com.madgag.github.Implicits._
 import com.madgag.github.{PullRequestId, RepoId}
@@ -112,25 +112,24 @@ object Application extends Controller {
       }
   }
 
-  lazy val gitCommitId = {
-    val g = gitCommitIdFromHerokuFile
-    Logger.info(s"Heroku dyno commit id $g")
-    g.getOrElse(app.BuildInfo.gitCommitId)
-  }
+  lazy val gitCommitId = gitCommitIdFromHerokuFile.getOrElse(app.BuildInfo.gitCommitId)
 
   def gitCommitIdFromHerokuFile: Option[String]  = {
-    val file = new File("/etc/heroku/dyno")
-    val existingFile = if (file.exists && file.isFile) Some(file) else None
+    val existingFileOpt: Option[File] = herokuMetadataFile()
 
-    Logger.info(s"Heroku dyno metadata $existingFile")
+    Logger.info(s"Heroku dyno metadata: $existingFileOpt")
 
     for {
-      f <- existingFile
-      text <- (Json.parse(scala.io.Source.fromFile(f).mkString) \ "release" \ "commit").asOpt[String]
-      objectId <- Try(ObjectId.fromString(text)).toOption
-    } yield objectId.name
+      existingFile <- existingFileOpt
+      commitId <- (Json.parse(new FileInputStream(existingFile)) \ "release" \ "commit").asOpt[String]
+    } yield {
+      Logger.info(s"Heroku dyno commit id: $commitId")
+      commitId
+    }
+  }
+
+  def herokuMetadataFile(): Option[File] = {
+    val file = new File("/etc/heroku/dyno")
+    if (file.exists && file.isFile) Some(file) else None
   }
 }
-
-
-
