@@ -2,9 +2,10 @@ package controllers
 
 import javax.inject.Inject
 
-import com.madgag.github.RepoId
+import com.madgag.github.{PullRequestId, RepoId}
 import lib._
-import lib.model.MessageSummary
+import lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn
+import lib.model.{PRMessageIdFinder, MessageSummary}
 import play.api.cache.Cached
 import play.api.libs.json.Json._
 import play.api.mvc._

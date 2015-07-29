@@ -52,57 +52,45 @@
         @fragments.mailIdent(MessageSummary("{{id}}", "{{subject}}", java.time.ZonedDateTime.now, Addresses("{{addresses.from}}"), "{{groupLink}}"))
     </script>
     <script>
-        var inReplyToFieldContainer = jQuery("#@mailType.slug-in-reply-to");
-        var messageSuggestions = new Bloodhound({
-            datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
-            queryTokenizer: Bloodhound.tokenizers.whitespace,
-            identify: function(obj) { return obj.id; },
-            prefetch: '@routes.Api.pullRequestMessages(req.pr.id)',
-            remote: {
-                url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
-                wildcard: 'QUERY_STRING'
-            }
+        jQuery(function() {
+            var inReplyToFieldContainer = jQuery("#@mailType.slug-in-reply-to");
+            var messageSuggestions = new Bloodhound({
+                datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+                queryTokenizer: Bloodhound.tokenizers.whitespace,
+                remote: {
+                    url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
+                    wildcard: 'QUERY_STRING'
+                }
+            });
+
+            var messageSuggestionsWithDefaults = function(q, sync) {
+              console.log("q = "+q);
+              var fallback = @Html(JsString(lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn(req.pr).headOption.getOrElse("")).toString) ;
+              var query = q === '' ? fallback : q;
+              
+              console.log("q = "+q + " query="+query);
+              messageSuggestions.search( query, sync);
+            };
+
+            inReplyToFieldContainer.messageIdPicker({
+                hint: true,
+                highlight: true,
+                minLength: 0, // To allow default suggestions
+                classNames: {menu: 'tt-dropdown-menu'}
+            }, {
+                name: 'messageIds',
+                source: messageSuggestionsWithDefaults,
+                display: 'id',
+                templates: {
+                    empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',
+                    suggestion: Handlebars.compile(jQuery("#entry-template").html())
+                }
+            });
+            inReplyToFieldContainer.find(".input-group .typeahead").bind('typeahead:select', function (ev, suggestion) {
+                jQuery("#@mailType.slug-subject-prefix input").changeVal(suggestion.suggestsPrefix);
+            });
         });
 
-        var messageSuggestionsWithDefaults = function(q, sync) {
-          console.log("q = "+q);
-          if (q === '') {
-            sync(messageSuggestions.get(
-                @Html(JsArray(lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn(req.pr).take(3).map(JsString(_))).toString)
-            ));
-          } else {
-            messageSuggestions.search(q, sync);
-          }
-        }
-
-        inReplyToFieldContainer.messageIdPicker({
-            hint: true,
-            highlight: true,
-            minLength: 0, // To allow default suggestions
-            classNames: {menu: 'tt-dropdown-menu'}
-        }, {
-            name: 'messageIds',
-            source: function(q, sync) {
-          console.log("q = "+q);
-          if (q === '') {
-            var bangooo = sync(messageSuggestions.get(
-                @Html(JsArray(lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn(req.pr).take(3).map(JsString(_))).toString)
-            ));
-            console.log("bangooo = "+bangooo);
-            bangooo;
-          } else {
-            messageSuggestions.search(q, sync);
-          }
-        },
-            display: 'id',
-            templates: {
-                empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',
-                suggestion: Handlebars.compile(jQuery("#entry-template").html())
-            }
-        });
-        inReplyToFieldContainer.find(".input-group .typeahead").bind('typeahead:select', function (ev, suggestion) {
-            jQuery("#@mailType.slug-subject-prefix input").changeVal(suggestion.suggestsPrefix);
-        });
     </script>
 
     @b3.submit('class -> s"btn $btnClass btn-lg", 'disabled -> proposedMail.errors.nonEmpty) {
