@@ -8,9 +8,6 @@ cache:
   directories:
   - $HOME/.sbt
   - $HOME/.ivy2
-before_install:
-  - cp -R $HOME/.ivy2/cache $HOME/original-ivy2-cache
 before_cache:
   - find $HOME/.sbt -name "*.lock" -type f -delete
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -type f -delete
-  - cp -R $HOME/original-ivy2-cache $HOME/.ivy2/cache
