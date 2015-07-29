@@ -117,13 +117,13 @@ object Application extends Controller {
   def gitCommitIdFromHerokuFile: Option[String]  = {
     val existingFileOpt: Option[File] = herokuMetadataFile()
 
-    Logger.info(s"Heroku dyno metadata: $existingFileOpt")
+    Logger.debug(s"Heroku dyno metadata: $existingFileOpt")
 
     for {
       existingFile <- existingFileOpt
       commitId <- (Json.parse(new FileInputStream(existingFile)) \ "release" \ "commit").asOpt[String]
     } yield {
-      Logger.info(s"Heroku dyno commit id: $commitId")
+      Logger.debug(s"Heroku dyno commit id: $commitId")
       commitId
     }
   }
