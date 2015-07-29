@@ -47,7 +47,7 @@ libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
   "com.netaporter" %% "scala-uri" % "0.4.7",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
-  "org.scalatestplus" %% "play" % "1.4.0-M3",
+  "org.scalatestplus" %% "play" % "1.4.0-M4",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.10.7",
   "com.sun.mail" % "javax.mail" % "1.5.3"
 )
