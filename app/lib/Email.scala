@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.Properties
 import javax.mail.Message.RecipientType
-import javax.mail.internet.{InternetAddress, MimeBodyPart, MimeMessage, MimeMultipart}
+import javax.mail.internet.{InternetAddress, MimeMessage}
 import javax.mail.{Address, Message}
 
 import lib.Email.Addresses
