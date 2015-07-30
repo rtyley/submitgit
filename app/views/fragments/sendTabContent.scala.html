@@ -1,5 +1,7 @@
 @import lib.Email.Addresses
 @import lib.model.MessageSummary
+@import lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn
+@import play.api.libs.json.JsString
 @(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String
         )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @import helper._
@@ -50,31 +52,41 @@
         @fragments.mailIdent(MessageSummary("{{id}}", "{{subject}}", java.time.ZonedDateTime.now, Addresses("{{addresses.from}}"), "{{groupLink}}"))
     </script>
     <script>
-        var inReplyToFieldContainer = jQuery("#@mailType.slug-in-reply-to");
-        inReplyToFieldContainer.messageIdPicker({
-            hint: true,
-            highlight: true,
-            minLength: 3,
-            classNames: {menu: 'tt-dropdown-menu'}
-        }, {
-            name: 'messageIds',
-            source: new Bloodhound({
+        jQuery(function() {
+            var inReplyToFieldContainer = jQuery("#@mailType.slug-in-reply-to");
+            var messageSuggestions = new Bloodhound({
                 datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
                 queryTokenizer: Bloodhound.tokenizers.whitespace,
                 remote: {
                     url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
                     wildcard: 'QUERY_STRING'
                 }
-            }),
-            display: 'id',
-            templates: {
-                empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',
-                suggestion: Handlebars.compile(jQuery("#entry-template").html())
-            }
+            });
+
+            var messageSuggestionsWithDefaults = function(q, sync, async) {
+              var fallback = @Html(JsString(messageIdsByMostRecentUsageIn(req.pr).headOption.getOrElse("")).toString) ;
+              messageSuggestions.search( q === '' ? fallback : q, sync, async);
+            };
+
+            inReplyToFieldContainer.messageIdPicker({
+                hint: true,
+                highlight: true,
+                minLength: 0, // To allow default suggestions
+                classNames: {menu: 'tt-dropdown-menu'}
+            }, {
+                name: 'messageIds',
+                source: messageSuggestionsWithDefaults,
+                display: 'id',
+                templates: {
+                    empty: '<div class="empty-message">Unable to find any Messages that match that Id</div>',
+                    suggestion: Handlebars.compile(jQuery("#entry-template").html())
+                }
+            });
+            inReplyToFieldContainer.find(".input-group .typeahead").bind('typeahead:select', function (ev, suggestion) {
+                jQuery("#@mailType.slug-subject-prefix input").changeVal(suggestion.suggestsPrefix);
+            });
         });
-        inReplyToFieldContainer.find(".input-group .typeahead").bind('typeahead:select', function (ev, suggestion) {
-            jQuery("#@mailType.slug-subject-prefix input").changeVal(suggestion.suggestsPrefix);
-        });
+
     </script>
 
     @b3.submit('class -> s"btn $btnClass btn-lg", 'disabled -> proposedMail.errors.nonEmpty) {
