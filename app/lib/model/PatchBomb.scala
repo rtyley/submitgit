@@ -24,7 +24,7 @@ case class PatchBomb(
       Email(
         addresses,
         subject = (prefixes :+ patchCommit.commit.subject).mkString(" "),
-        bodyText = (fromBodyPrefixOpt.toSeq :+ s"${patchCommit.patch.body}\n---\n$footer").mkString("\n")
+        bodyText = (fromBodyPrefixOpt.toSeq :+ s"${patchCommit.patch.body}\n--\n$footer").mkString("\n")
       )
     }
   }
