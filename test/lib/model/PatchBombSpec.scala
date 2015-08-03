@@ -13,6 +13,7 @@ class PatchBombSpec extends PlaySpec {
   def patchBombFrom(text: String) = PatchBomb(
     Seq(patchCommit),
     Addresses(from = text),
+    coverLetterOpt = None,
     footer = "FOOTER"
   )
   

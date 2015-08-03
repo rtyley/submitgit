@@ -6,25 +6,36 @@ import lib.Email
 import lib.Email.Addresses
 import lib.model.PatchBomb.countTextFor
 
+import scala.collection.SortedMap
+
 case class PatchBomb(
   patchCommits: Seq[PatchCommit],
   addresses: Addresses,
   shortDescription: String = "PATCH",
   additionalPrefix: Option[String] = None,
+  coverLetterOpt: Option[MessageSnowflake],
   footer: String
 ) {
   lazy val emails: Seq[Email] = {
-    for ((patchCommit, index) <- patchCommits.zipWithIndex) yield {
-      val patchDescriptionAndIndex = (Seq(shortDescription) ++ countTextFor(index + 1, patchCommits.size)).mkString(" ")
-      val prefixes = (additionalPrefix.toSeq :+ patchDescriptionAndIndex).map("["+_+"]")
-
+    val patchCommitSnowflakes: Seq[(Int, MessageSnowflake)] = for ((patchCommit, commitIndex) <- patchCommits.zipWithIndex) yield {
       val authorEmailString = patchCommit.commit.author.userEmailString
       val fromBodyPrefixOpt = Some(s"From: $authorEmailString\n").filterNot(_ => authorEmailString == addresses.from)
+      commitIndex + 1 -> MessageSnowflake(
+        patchCommit.commit.subject,
+        (fromBodyPrefixOpt.toSeq :+ patchCommit.patch.body).mkString("\n")
+      )
+    }
+
+    val snowflakesWithIndices = SortedMap[Int, MessageSnowflake](patchCommitSnowflakes ++ coverLetterOpt.map(0 -> _):_*)
+
+    for ((index, snowflake) <- snowflakesWithIndices.toSeq) yield {
+      val patchDescriptionAndIndex = (Seq(shortDescription) ++ countTextFor(index, snowflakesWithIndices.size)).mkString(" ")
+      val prefixes = (additionalPrefix.toSeq :+ patchDescriptionAndIndex).map("["+_+"]")
 
       Email(
         addresses,
-        subject = (prefixes :+ patchCommit.commit.subject).mkString(" "),
-        bodyText = (fromBodyPrefixOpt.toSeq :+ s"${patchCommit.patch.body}\n--\n$footer").mkString("\n")
+        subject = (prefixes :+ snowflake.title).mkString(" "),
+        bodyText = s"${snowflake.body}\n--\n$footer"
       )
     }
   }

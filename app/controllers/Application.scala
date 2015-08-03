@@ -11,7 +11,7 @@ import lib.actions.Requests._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
 import lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn
-import lib.model.PatchBomb
+import lib.model.{MessageSnowflake, PatchBomb}
 import org.eclipse.jgit.lib.ObjectId
 import org.kohsuke.github._
 import play.api.Logger
@@ -47,10 +47,13 @@ object Application extends Controller {
   def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
     val myself = req.gitHub.getMyself
 
+    lazy val defaultInitialSettings =
+      PRMailSettings("PATCH", messageIdsByMostRecentUsageIn(req.pr).headOption, Some(req.pr.getBody))
+
     val settings = (for {
       data <- req.session.get(prId.slug)
       s <- Json.parse(data).validate[PRMailSettings].asOpt
-    } yield s).getOrElse(PRMailSettings("PATCH", messageIdsByMostRecentUsageIn(req.pr).headOption))
+    } yield s).getOrElse(defaultInitialSettings)
 
     implicit val form = mailSettingsForm.fill(settings)
     for (proposedMailByType <- proposedMailByTypeFor(req)) yield {
@@ -85,7 +88,8 @@ object Application extends Controller {
   val mailSettingsForm = Form(
     mapping(
       "subjectPrefix" -> default(text(maxLength = 20), "PATCH"),
-      "inReplyTo" -> optional(text)
+      "inReplyTo" -> optional(text),
+      "coverLetter" -> optional(text)
     )(PRMailSettings.apply)(PRMailSettings.unapply)
   )
 
@@ -96,10 +100,11 @@ object Application extends Controller {
       val addresses = mailType.addressing(mailingList, req.user)
 
       val settings = req.body
+      val coverLetterOpt = settings.coverLetter.map(body => MessageSnowflake(req.pr.getTitle,body))
       
       for {
         patchCommits <- req.patchCommitsF
-        patchBomb = PatchBomb(patchCommits, addresses, settings.subjectPrefix, mailType.subjectPrefix, mailType.footer(req.pr))
+        patchBomb = PatchBomb(patchCommits, addresses, settings.subjectPrefix, mailType.subjectPrefix, coverLetterOpt, mailType.footer(req.pr))
         initialEmail = patchBomb.emails.head
         initialMessageId <- ses.send(settings.inReplyTo.fold(initialEmail)(initialEmail.inReplyTo))
       } yield {
