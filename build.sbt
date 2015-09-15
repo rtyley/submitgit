@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
   filters,
   "com.madgag" %% "play-git-hub" % "1.1",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
-  "org.webjars" % "bootstrap" % "3.3.4",
+  "org.webjars" % "bootstrap" % "3.3.5",
   "com.adrianhurt" %% "play-bootstrap3" % "0.4.4-P24",
   "org.webjars.bower" % "octicons" % "2.2.3",
   "org.webjars.bower" % "timeago" % "1.4.1",
