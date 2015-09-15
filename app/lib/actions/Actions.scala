@@ -2,7 +2,8 @@ package lib.actions
 
 import com.madgag.github.Implicits._
 import com.madgag.github.{PullRequestId, RepoId}
-import com.madgag.playgithub.auth.GHRequest
+import com.madgag.playgithub.auth.AuthenticatedSessions.AccessToken
+import com.madgag.playgithub.auth.{Client, GHRequest}
 import controllers.Application._
 import controllers.Auth
 import lib._
@@ -15,26 +16,30 @@ import play.api.mvc._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
+import scalax.file.ImplicitConversions._
 
 
 object Actions {
   private val authScopes = Seq("user:email")
 
-  val GitHubAuthenticatedAction = com.madgag.playgithub.auth.Actions.githubAction(authScopes)(Auth.authClient)
+  implicit val authClient: Client = Auth.authClient
+
+  implicit val provider = AccessToken.FromSession
+
+  val GitHubAuthenticatedAction = com.madgag.playgithub.auth.Actions.gitHubAction(authScopes, Bot.workingDir.toPath)
 
   def githubRepoAction(repoId: RepoId) = GitHubAuthenticatedAction andThen new ActionRefiner[GHRequest, GHRepoRequest] {
     override protected def refine[A](request: GHRequest[A]): Future[Either[Result, GHRepoRequest[A]]] = Future {
       Either.cond(Project.byRepoId.contains(repoId), {
-        val gitHub = request.gitHub
         val repo = Bot.conn().getRepository(repoId.fullName)
-        new GHRepoRequest(gitHub, repo, request)}, Forbidden("Not a supported repo"))
+        new GHRepoRequest(request.gitHubCredentials, repo, request)}, Forbidden("Not a supported repo"))
     }
   }
 
   def githubPRAction(prId: PullRequestId) = githubRepoAction(prId.repo) andThen new ActionRefiner[GHRepoRequest, GHPRRequest] {
     override protected def refine[A](request: GHRepoRequest[A]): Future[Either[Result, GHPRRequest[A]]] = Future {
       Try(request.repo.getPullRequest(prId.num)) match {
-        case Success(pr) => Right(new GHPRRequest[A](request.gitHub, pr, request))
+        case Success(pr) => Right(new GHPRRequest[A](request.gitHubCredentials, pr, request))
         case Failure(e) => Left(NotFound(s"${request.repo.getFullName} doesn't seem to have PR #${prId.num}"))
       }
     }

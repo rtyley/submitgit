@@ -1,17 +1,20 @@
 package lib
 
-import java.nio.file.Paths
+import com.madgag.github.GitHubCredentials
 
-import com.madgag.github.OkGitHub
+import scalax.file.ImplicitConversions._
+import scalax.file.Path
 
 object Bot {
 
-  val okGitHub = new OkGitHub(Paths.get("/tmp/submitgit/working-dir/http-response-cache/"))
+  val workingDir = Path.fromString("/tmp") / "bot" / "working-dir"
 
   import play.api.Play.current
   val config = play.api.Play.configuration
 
   val accessToken = config.getString("github.botAccessToken").get
 
-  def conn() = okGitHub.conn(accessToken)
+  val ghCreds = GitHubCredentials.forAccessKey(accessToken, workingDir.toPath).get
+
+  def conn() = ghCreds.conn()
 }

@@ -1,6 +1,7 @@
 package lib.actions
 
 import com.madgag.git._
+import com.madgag.github.GitHubCredentials
 import com.madgag.github.Implicits._
 import com.madgag.okhttpscala._
 import com.madgag.playgithub.auth.GHRequest
@@ -20,9 +21,9 @@ object Requests {
     lazy val userEmail = req.user.primaryEmail
   }
 
-  class GHRepoRequest[A](gitHub: GitHub, val repo: GHRepository, request: Request[A]) extends GHRequest[A](gitHub, request)
+  class GHRepoRequest[A](gitHubCredentials: GitHubCredentials, val repo: GHRepository, request: Request[A]) extends GHRequest[A](gitHubCredentials, request)
 
-  class GHPRRequest[A](gitHub: GitHub, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHub, pr.getRepository, request) {
+  class GHPRRequest[A](gitHubCredentials: GitHubCredentials, val pr: GHPullRequest, request: Request[A]) extends GHRepoRequest[A](gitHubCredentials, pr.getRepository, request) {
     lazy val userOwnsPR = user == pr.getUser
 
     lazy val patchCommitsF: Future[Seq[PatchCommit]] = {
