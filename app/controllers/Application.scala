@@ -110,25 +110,4 @@ object Application extends Controller {
         Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> toJson(updatedSettings).toString)
       }
   }
-
-  lazy val gitCommitId = gitCommitIdFromHerokuFile.getOrElse(app.BuildInfo.gitCommitId)
-
-  def gitCommitIdFromHerokuFile: Option[String]  = {
-    val existingFileOpt: Option[File] = herokuMetadataFile()
-
-    Logger.debug(s"Heroku dyno metadata: $existingFileOpt")
-
-    for {
-      existingFile <- existingFileOpt
-      commitId <- (Json.parse(new FileInputStream(existingFile)) \ "release" \ "commit").asOpt[String]
-    } yield {
-      Logger.debug(s"Heroku dyno commit id: $commitId")
-      commitId
-    }
-  }
-
-  def herokuMetadataFile(): Option[File] = {
-    val file = new File("/etc/heroku/dyno")
-    if (file.exists && file.isFile) Some(file) else None
-  }
 }

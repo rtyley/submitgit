@@ -12,7 +12,7 @@ lazy val root = (project in file(".")).enablePlugins(
 ).settings(
   buildInfoKeys := Seq[BuildInfoKey](
     name,
-    BuildInfoKey.constant("gitCommitId", Option(System.getenv("BUILD_VCS_NUMBER")) getOrElse(try {
+    BuildInfoKey.constant("gitCommitId", Option(System.getenv("SOURCE_VERSION")) getOrElse(try {
       "git rev-parse HEAD".!!.trim
     } catch { case e: Exception => "unknown" }))
   ),
