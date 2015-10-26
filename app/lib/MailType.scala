@@ -5,7 +5,7 @@ import com.madgag.github.Implicits._
 import controllers.routes
 import lib.actions.Requests._
 import lib.checks.{Check, GHChecks, PRChecks}
-import org.kohsuke.github.{GHMyself, GHPullRequest}
+import org.kohsuke.github.{GHCompare, GHMyself, GHPullRequest}
 import play.api.mvc.RequestHeader
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -108,8 +108,20 @@ object MailType {
 
     override def afterSending(pr: GHPullRequest, messageId: String, prMailSettings: PRMailSettings) = {
       val mailingListLinks = Project.byRepoId(pr.id.repo).mailingList.archives.map(a => s"[${a.providerName}](${a.linkFor(messageId)})").mkString(", ")
+
+      val ghCompare = pr.getRepository.getCompare(pr.getBase.getSha, pr.getHead.getSha)
+      // lazy way of constructing https://github.com/submitgit/pretend-git/compare/7c597ef345aed345576de616c51f27e6f4b342b3...f90334356a304bc0acad01ab4fc64c49a3afd371
+      val prCompareSnapshotUrl = ghCompare.getHtmlUrl
+
+      val numCommits = ghCompare.getTotalCommits
+      val patchBombDesc = if (numCommits == 1) {
+        s"this commit ($prCompareSnapshotUrl) as a patch"
+      } else {
+        s"these $numCommits commits ($prCompareSnapshotUrl) as a set of patches"
+      }
+
       pr.comment(
-        s"${pr.getUser.atLogin} sent this to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +
+        s"${pr.getUser.atLogin} sent $patchBombDesc to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +
           s"here on $mailingListLinks []($messageId)")
       prMailSettings.afterBeingUsedToSend(messageId)
     }
