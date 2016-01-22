@@ -7,7 +7,7 @@ For possible contributors looking to build & run _submitGit_ locally...
 _submitGit_ is written in Scala, a modern functional language that runs on the JVM - so it
 can run anywhere Java can.
 
-* Install Java 8 or above
+* Install JDK 8 or above
 * Install [sbt](http://www.scala-sbt.org/release/tutorial/Setup.html), the Scala build tool
 
 ### Service Credentials
