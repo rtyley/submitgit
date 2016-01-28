@@ -1,5 +1,7 @@
 package lib
 
+import javax.mail.internet.InternetAddress
+
 import com.github.nscala_time.time.Imports._
 import com.madgag.github.Implicits._
 import controllers.routes
@@ -27,8 +29,12 @@ sealed trait MailType {
 
 object MailType {
   
-  def userEmailString(user: GHMyself) = s"${user.displayName} <${user.primaryEmail.getEmail}>"
-  
+  def internetAddress(user: GHMyself) =
+    internetAddressFor(user.primaryEmail.getEmail, user.displayName)
+
+  def internetAddressFor(emailAddress: String, displayName: String) =
+    new InternetAddress(emailAddress, displayName)
+
   val all = Seq(Preview, Live)
 
   val bySlug = all.map(mt => mt.slug -> mt).toMap
@@ -51,8 +57,8 @@ object MailType {
     }
 
     override def addressing(mailingList: MailingList, user: GHMyself) = Email.Addresses(
-      from = "submitGit <submitgit@gmail.com>",
-      to = Seq(userEmailString(user))
+      from = new InternetAddress("submitGit <submitgit@gmail.com>"),
+      to = Seq(internetAddress(user))
     )
 
     override val subjectPrefix = Some("TEST")
@@ -76,7 +82,7 @@ object MailType {
     override def footer(pr: GHPullRequest)(implicit request: RequestHeader): String = pr.getHtmlUrl.toString
 
     override def addressing(mailingList: MailingList, user: GHMyself) = {
-      val userEmail = userEmailString(user)
+      val userEmail = internetAddress(user)
       Email.Addresses(
         from = userEmail,
         to = Seq(mailingList.emailAddress),

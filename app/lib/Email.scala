@@ -11,11 +11,11 @@ import lib.Email.Addresses
 
 object Email {
   case class Addresses(
-    from: String,
-    to: Seq[String] = Seq.empty,
-    cc: Seq[String] = Seq.empty,
-    bcc: Seq[String] = Seq.empty,
-    replyTo: Option[String] = None
+    from: InternetAddress,
+    to: Seq[InternetAddress] = Seq.empty,
+    cc: Seq[InternetAddress] = Seq.empty,
+    bcc: Seq[InternetAddress] = Seq.empty,
+    replyTo: Option[InternetAddress] = None
   )
 }
 
@@ -37,9 +37,9 @@ case class Email(
     val msg = new MimeMessage(s)
 
     // Sender and recipient
-    msg.setFrom(new InternetAddress(addresses.from))
-    def setRecipients(typ: Message.RecipientType, recipients: Seq[String]) {
-      if (recipients.nonEmpty) msg.setRecipients(typ, recipients.map(new InternetAddress(_)).toArray[Address])
+    msg.setFrom(addresses.from)
+    def setRecipients(typ: Message.RecipientType, recipients: Seq[InternetAddress]) {
+      if (recipients.nonEmpty) msg.setRecipients(typ, recipients.toArray[Address])
     }
 
     setRecipients(RecipientType.TO, addresses.to)
@@ -48,7 +48,7 @@ case class Email(
 
     msg.setSubject(subject)
     headers.foreach(t => msg.addHeader(t._1, t._2))
-    addresses.replyTo.foreach(r => msg.setReplyTo(Array(new InternetAddress(r))))
+    addresses.replyTo.foreach(r => msg.setReplyTo(Array(r)))
 
     msg.setText(bodyText)
 

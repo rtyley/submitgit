@@ -38,7 +38,7 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
       submitGitGoogleGroup.url mustEqual "https://groups.google.com/forum/#!forum/submitgit-test"
     }
     "derive correct email address" in {
-      submitGitGoogleGroup.emailAddress mustEqual "submitgit-test@googlegroups.com"
+      submitGitGoogleGroup.emailAddress.toString mustEqual "submitgit-test@googlegroups.com"
     }
     "give correct raw article url" in {
       submitGitGoogleGroup.rawUrlFor("/forum/#!msg/submitgit-test/-cq4q1w7jyY/A-EH61BAZaUJ").toString mustEqual
@@ -83,6 +83,10 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
     }
   }
   "MARC" should {
+    "deobfuscate this crazy stuff" in {
+      Marc.deobfuscate("Roberto Tyley &lt;roberto.tyley () gmail ! com&gt;") mustEqual
+        "Roberto Tyley <roberto.tyley@gmail.com>"
+    }
     "have MessageSummary parsed (totally hackishly) from html - because the alternate raw version excludes headers" in {
       val message =
         Marc.messageSummaryFor(Resource.fromClasspath("samples/mailarchives/marc/m.143228360912708.html").string)

@@ -49,7 +49,7 @@
     }
 
     <script id="entry-template" type="text/x-handlebars-template">
-        @fragments.mailIdent(MessageSummary("{{id}}", "{{subject}}", java.time.ZonedDateTime.now, Addresses("{{addresses.from}}"), "{{groupLink}}"))
+        @fragments.mailIdent(MessageSummary("{{id}}", "{{subject}}", java.time.ZonedDateTime.now, Addresses(new javax.mail.internet.InternetAddress("{{addresses.from}}")), "{{groupLink}}"))
     </script>
     <script>
         jQuery(function() {

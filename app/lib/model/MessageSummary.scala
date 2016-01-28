@@ -1,7 +1,7 @@
 package lib.model
 
 import java.time.{ZoneId, ZonedDateTime}
-import javax.mail.internet.MailDateFormat
+import javax.mail.internet.{InternetAddress, MailDateFormat}
 
 import fastparse.core.Result
 import lib.Email.Addresses
@@ -10,6 +10,9 @@ import play.api.mvc.Headers
 
 object MessageSummary {
 
+  implicit val writesInternetAddress = new Writes[InternetAddress] {
+    override def writes(ia: InternetAddress) = JsString(ia.toUnicodeString)
+  }
   implicit val writesAddresses = Json.writes[Addresses]
   implicit val writesMessageSummary = new Writes[MessageSummary] {
     override def writes(o: MessageSummary): JsValue = {
@@ -25,7 +28,7 @@ object MessageSummary {
     val Result.Success(headerTuples, _) = PatchParsing.headers.parse(rawMessage)
     val headers = Headers(headerTuples: _*)
     val messageId = headers("Message-Id").stripPrefix("<").stripSuffix(">")
-    val from = headers("From")
+    val from = new InternetAddress(headers("From"))
     val date = new MailDateFormat().parse(headers("Date")).toInstant.atZone(ZoneId.of("UTC"))
     MessageSummary(messageId, headers("Subject"), date, Addresses(from), articleUrl)
   }

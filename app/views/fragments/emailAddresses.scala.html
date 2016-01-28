@@ -1,7 +1,7 @@
 @(addresses: lib.Email.Addresses)(implicit fc : views.html.b3.B3FieldConstructor)
+@import javax.mail.internet.InternetAddress
 
-
-    @display(label: String, ids: Seq[String]) = {
+    @display(label: String, ids: Seq[InternetAddress]) = {
     @if(ids.nonEmpty) {
         @b3.static(label) { @ids.mkString(", ")}
 
