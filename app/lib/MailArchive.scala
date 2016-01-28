@@ -3,6 +3,7 @@ package lib
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.ChronoField._
 import java.time.{LocalDateTime, ZoneId}
+import javax.mail.internet.InternetAddress
 
 import com.madgag.okhttpscala._
 import com.netaporter.uri.Uri
@@ -83,7 +84,12 @@ case class Gmane(groupName: String) extends MailArchive with MessageSummaryByRaw
 object Marc {
   val Git = Marc("git")
 
-  def deobfuscate(emailOrMessageId: String) = emailOrMessageId.replace(" () ","@").replace(" ! ", ".")
+  def deobfuscate(emailOrMessageId: String) = emailOrMessageId
+    .replace(" () ","@")
+    .replace(" ! ", ".")
+    .replace("&lt;","<")
+    .replace("&gt;",">")
+
 
   /*
    * Hacks EVERYWHERE - MARC unfortunately doesn't expose this data in a nice format for us
@@ -95,7 +101,7 @@ object Marc {
       header.outerHtml.trim.stripSuffix(":") -> value.asInstanceOf[Element].html()
     }).toMap
     val messageId = deobfuscate(headerMap("Message-ID"))
-    val from = deobfuscate(headerMap("From"))
+    val from = new InternetAddress(deobfuscate(headerMap("From")))
 
     val ISO_LOCAL_TIME = new DateTimeFormatterBuilder().appendValue(HOUR_OF_DAY).appendLiteral(':').appendValue(MINUTE_OF_HOUR).optionalStart.appendLiteral(':').appendValue(SECOND_OF_MINUTE).toFormatter
     val ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder().parseCaseInsensitive.append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral('T').append(ISO_LOCAL_TIME).toFormatter
@@ -157,7 +163,7 @@ case class GoogleGroup(groupName: String) extends MailArchive with MessageSummar
   def linkFor(messageId: String) = s"https://groups.google.com/d/msgid/$groupName/$messageId"
 
   // submitgit-test@googlegroups.com
-  val emailAddress = s"$groupName@googlegroups.com"
+  val emailAddress = new InternetAddress(s"$groupName@googlegroups.com")
 
   val mailingList = MailingList(emailAddress, Seq(this))
 

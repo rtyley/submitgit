@@ -1,11 +1,13 @@
 package lib
 
+import javax.mail.internet.InternetAddress
+
 import com.madgag.github.RepoId
 import lib.model.MessageSummary
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class MailingList(emailAddress: String, archives: Seq[MailArchive]) {
+case class MailingList(emailAddress: InternetAddress, archives: Seq[MailArchive]) {
   def lookupMessage(query: String)(implicit ec: ExecutionContext): Future[Seq[MessageSummary]] =
     Future.find(archives.map(_.lookupMessage(query)))(_.nonEmpty).map(_.toSeq.flatten)
 }
@@ -13,7 +15,7 @@ case class MailingList(emailAddress: String, archives: Seq[MailArchive]) {
 object Project {
   val Git = Project(
     RepoId("git", "git"),
-    MailingList("git@vger.kernel.org", Seq(
+    MailingList(new InternetAddress("git@vger.kernel.org"), Seq(
       Gmane.Git,
       Marc.Git
       // MailArchiveDotCom("git@vger.kernel.org") -- message-id search appears broken

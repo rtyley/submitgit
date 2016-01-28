@@ -1,5 +1,7 @@
 package lib.model
 
+import javax.mail.internet.InternetAddress
+
 import lib.Email.Addresses
 import org.eclipse.jgit.lib.ObjectId
 import org.scalatestplus.play.PlaySpec
@@ -12,7 +14,7 @@ class PatchBombSpec extends PlaySpec {
 
   def patchBombFrom(text: String) = PatchBomb(
     Seq(patchCommit),
-    Addresses(from = text),
+    Addresses(from = new InternetAddress(text)),
     footer = "FOOTER"
   )
   
