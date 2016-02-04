@@ -9,7 +9,7 @@ to make it more friendly—will learn that mailing a patch is
 especially if they're using a webmail service, like Gmail. The
 recommended approach is to forgo regular email clients, and
 use [`git-format-patch`](http://git-scm.com/docs/git-format-patch)
-and [`git-send-email`](http://git-scm.com/docs/git-send-email`)
+and [`git-send-email`](http://git-scm.com/docs/git-send-email)
 on the command-line to ensure nothing gets lost or auto-bounced
 (for containing HTML, for instance, which Gmail does by default).
 
