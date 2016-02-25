@@ -4,7 +4,7 @@ import java.text.NumberFormat
 
 import lib.Email
 import lib.Email.Addresses
-import lib.model.PatchBomb.countTextFor
+import lib.model.PatchBomb.{fromBodyPrefixOpt, countTextFor}
 
 case class PatchBomb(
   patchCommits: Seq[PatchCommit],
@@ -13,24 +13,32 @@ case class PatchBomb(
   additionalPrefix: Option[String] = None,
   footer: String
 ) {
+
   lazy val emails: Seq[Email] = {
     for ((patchCommit, index) <- patchCommits.zipWithIndex) yield {
       val patchDescriptionAndIndex = (Seq(shortDescription) ++ countTextFor(index + 1, patchCommits.size)).mkString(" ")
       val prefixes = (additionalPrefix.toSeq :+ patchDescriptionAndIndex).map("["+_+"]")
 
-      val authorEmailString = patchCommit.commit.author.userEmailString
-      val fromBodyPrefixOpt = Some(s"From: $authorEmailString\n").filterNot(_ => authorEmailString == addresses.from)
-
       Email(
         addresses,
         subject = (prefixes :+ patchCommit.commit.subject).mkString(" "),
-        bodyText = (fromBodyPrefixOpt.toSeq :+ s"${patchCommit.patch.body}\n--\n$footer").mkString("\n")
+        bodyText =
+          (fromBodyPrefixOpt(patchCommit, addresses).toSeq :+ s"${patchCommit.patch.body}\n--\n$footer").mkString("\n")
       )
     }
   }
 }
 
 object PatchBomb {
+
+  def fromBodyPrefixOpt(patchCommit: PatchCommit, addresses: Addresses): Option[String] = {
+    val author = patchCommit.commit.author
+
+    val shouldAddFromBodyPrefix =
+      author.email == addresses.from.getAddress || author.email.contains("noreply")
+
+    if (shouldAddFromBodyPrefix) None else Some(s"From: ${author.userEmailString}\n")
+  }
 
   def numberFormatFor(size: Int) = {
     val nf = NumberFormat.getIntegerInstance
