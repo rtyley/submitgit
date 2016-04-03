@@ -1,19 +1,19 @@
-@(userPRs: Seq[org.kohsuke.github.GHPullRequest], otherPRs: Seq[org.kohsuke.github.GHPullRequest])(implicit req: GHRepoRequest[_])
+@(userPRs: Seq[PullRequest], otherPRs: Seq[PullRequest])(implicit req: GHRepoRequest[_])
 @main {
 
     <div class="row">
         <ol class="breadcrumb">
-            <li class="active"><span class="octicon octicon-repo"></span> @req.repo.id.fullName</li>
+            <li class="active"><span class="octicon octicon-repo"></span> @req.repo.full_name</li>
         </ol>
     </div>
     <div class="row">
         <div class="col-md-3"></div>
         <div class="col-md-6">
             @if(userPRs.nonEmpty) {
-                <h3>Choose one of your pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a></h3>
+                <h3>Choose one of your pull requests against <a href="@req.repo.html_url">@req.repo.full_name</a></h3>
                 @fragments.listPullRequests(userPRs)
             } else {
-                <h4>You don't have any pull requests against <a href="@req.repo.gitHttpTransportUrl">@req.repo.getFullName</a>.
+                <h4>You don't have any pull requests against <a href="@req.repo.html_url">@req.repo.full_name</a>.
                 Try a preview with one of these:</h4>
                 @fragments.listPullRequests(otherPRs)
             }

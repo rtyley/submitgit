@@ -4,7 +4,7 @@ import java.text.NumberFormat
 
 import lib.Email
 import lib.Email.Addresses
-import lib.model.PatchBomb.{fromBodyPrefixOpt, countTextFor}
+import lib.model.PatchBomb.{countTextFor, fromBodyPrefixOpt}
 
 case class PatchBomb(
   patchCommits: Seq[PatchCommit],
@@ -37,7 +37,7 @@ object PatchBomb {
     val shouldAddFromBodyPrefix =
       author.email == addresses.from.getAddress || author.email.contains("noreply")
 
-    if (shouldAddFromBodyPrefix) None else Some(s"From: ${author.userEmailString}\n")
+    if (shouldAddFromBodyPrefix) None else Some(s"From: ${author.addressString}\n")
   }
 
   def numberFormatFor(size: Int) = {

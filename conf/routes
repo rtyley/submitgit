@@ -3,7 +3,7 @@
 # ~~~~
 
 GET         /                                                    controllers.Application.index()
-GET         /$repo<[^/]+/[^/]+>/pulls                            controllers.Application.listPullRequests(repo: com.madgag.github.RepoId)
+GET         /$repo<[^/]+/[^/]+>/pulls                            controllers.Application.listPullRequests(repo: RepoId)
 GET         /$pr<[^/]+/[^/]+/pull/[\d]+>                         controllers.Application.reviewPullRequest(pr: PullRequestId)
 POST        /$pr<[^/]+/[^/]+/pull/[\d]+>/:submitType             controllers.Application.mailPullRequest(pr: PullRequestId, submitType: MailType)
 GET         /$pr<[^/]+/[^/]+/pull/[\d]+>/:headCommit/:sig        controllers.Application.acknowledgePreview(pr: PullRequestId, headCommit: ObjectId, sig: String)
@@ -11,7 +11,7 @@ GET         /$pr<[^/]+/[^/]+/pull/[\d]+>/:headCommit/:sig        controllers.App
 GET         /oauth/callback                                      controllers.Auth.oauthCallback(code: String)
 GET         /logout                                              controllers.Auth.logout()
 
-GET         /api/$repo<[^/]+/[^/]+>/message-lookup               @controllers.Api.messageLookup(repo: com.madgag.github.RepoId, query: String)
+GET         /api/$repo<[^/]+/[^/]+>/message-lookup               @controllers.Api.messageLookup(repo: RepoId, query: String)
 
 
 # Map static resources from the /public folder to the /assets URL path

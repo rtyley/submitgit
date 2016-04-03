@@ -1,9 +1,7 @@
 package controllers
 
-import java.io.{File, FileInputStream}
-
-import com.madgag.github.Implicits._
-import com.madgag.github.{PullRequestId, RepoId}
+import com.madgag.scalagithub.GitHub._
+import com.madgag.scalagithub.model.{PullRequestId, RepoId, User}
 import lib.MailType.proposedMailByTypeFor
 import lib._
 import lib.actions.Actions._
@@ -13,8 +11,6 @@ import lib.aws.SesAsyncHelpers._
 import lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn
 import lib.model.PatchBomb
 import org.eclipse.jgit.lib.ObjectId
-import org.kohsuke.github._
-import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages.Implicits._
@@ -23,7 +19,6 @@ import play.api.libs.json.Json._
 import play.api.mvc._
 import views.html.pullRequestSent
 
-import scala.collection.convert.wrapAll._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -35,34 +30,41 @@ object Application extends Controller {
     Ok(views.html.index())
   }
 
-  def listPullRequests(repoId: RepoId) = githubRepoAction(repoId) { implicit req =>
-    val myself = req.gitHub.getMyself
-    val openPRs = req.repo.getPullRequests(GHIssueState.OPEN)
-    val (userPRs, otherPRs) = openPRs.partition(_.getUser.equals(myself))
-    val alternativePRs = otherPRs.toStream ++ req.repo.listPullRequests(GHIssueState.CLOSED).toStream
+  def listPullRequests(repoId: RepoId) = githubRepoAction(repoId).async { implicit req =>
+    implicit val g = req.gitHub
+    for {
+      openPRs <- req.repo.pullRequests.list(Map("state"->"open")).all() // req.repo.getPullRequests(GHIssueState.OPEN)
+      closedPRs <- req.repo.pullRequests.list(Map("state"->"closed")).all()
+      myself: User <- req.userF
+    } yield {
+      val (userPRs, otherPRs) = openPRs.partition(_.user.id.equals(myself.id))
 
-    Ok(views.html.listPullRequests(userPRs, alternativePRs.take(3)))
+      val alternativePRs = otherPRs ++ closedPRs
+
+      Ok(views.html.listPullRequests(userPRs, alternativePRs.take(3)))
+    }
   }
 
   def reviewPullRequest(prId: PullRequestId) = githubPRAction(prId).async { implicit req =>
-    val myself = req.gitHub.getMyself
-
-    val settings = (for {
-      data <- req.session.get(prId.slug)
-      s <- Json.parse(data).validate[PRMailSettings].asOpt
-    } yield s).getOrElse(PRMailSettings("PATCH", messageIdsByMostRecentUsageIn(req.pr).headOption))
-
-    implicit val form = mailSettingsForm.fill(settings)
-    for (proposedMailByType <- proposedMailByTypeFor(req)) yield {
-      Ok(views.html.reviewPullRequest(req.pr, myself, proposedMailByType))
+    implicit val g = req.gitHub
+    for {
+      messageIds <- messageIdsByMostRecentUsageIn(req.pr)
+      commits <- req.pr.commits.list().all()
+      proposedMailByType <- proposedMailByTypeFor(req)
+    } yield {
+      implicit val form = mailSettingsForm.fill(settingsFor(req, messageIds))
+      Ok(views.html.reviewPullRequest(commits, proposedMailByType, messageIds))
     }
   }
+
+  def settingsFor(req: GHPRRequest[_], messageIds: Seq[String]): PRMailSettings = (for {
+      data <- req.session.get(req.pr.prId.slug)
+      s <- Json.parse(data).validate[PRMailSettings].asOpt
+    } yield s).getOrElse(PRMailSettings("PATCH", messageIds.headOption))
 
   def acknowledgePreview(prId: PullRequestId, headCommit: ObjectId, signature: String) =
     (GitHubAuthenticatedAction andThen verifyCommitSignature(headCommit, Some(signature))).async {
       implicit req =>
-        val userEmail = req.userEmail.getEmail
-
         def whatDoWeTellTheUser(userEmail: String, verificationStatusOpt: Option[VerificationStatus]): Future[Option[(String, String)]] = {
           verificationStatusOpt match {
             case Some(VerificationStatus.Success) => // Nothing to do
@@ -75,6 +77,8 @@ object Application extends Controller {
         }
 
         for {
+          userPrimaryEmail <- req.userPrimaryEmailF
+          userEmail = userPrimaryEmail.email
           verificationStatusOpt <- ses.getIdentityVerificationStatusFor(userEmail)
           flashOpt <- whatDoWeTellTheUser(userEmail, verificationStatusOpt)
         } yield {
@@ -91,9 +95,10 @@ object Application extends Controller {
 
   def mailPullRequest(prId: PullRequestId, mailType: MailType) = (githubPRAction(prId) andThen mailChecks(mailType)).async(parse.form(mailSettingsForm)) {
     implicit req =>
-      val mailingList = Project.byRepoId(req.repo.id).mailingList
+      implicit val g = req.gitHub
+      val mailingList = Project.byRepoId(req.repo.repoId).mailingList
 
-      val addresses = mailType.addressing(mailingList, req.user)
+      val addresses = mailType.addressing(mailingList, req.user.address)
 
       val settings = req.body
       
@@ -106,8 +111,8 @@ object Application extends Controller {
         for (email <- patchBomb.emails.tail) {
           ses.send(email.inReplyTo(initialMessageId))
         }
-        val updatedSettings = mailType.afterSending(req.pr, initialMessageId, settings)
-        Ok(pullRequestSent(req.pr, req.user, mailType)).addingToSession(prId.slug -> toJson(updatedSettings).toString)
+        val updatedSettings = mailType.afterSending(req.pr, patchBomb, initialMessageId, settings)
+        Ok(pullRequestSent(req.user, mailType)).addingToSession(prId.slug -> toJson(updatedSettings).toString)
       }
   }
 }

@@ -1,22 +1,34 @@
 package lib.model
 
-import java.time.Instant
+import java.time.ZonedDateTime
 
+import com.madgag.scalagithub.GitHub
+import com.madgag.scalagithub.GitHub._
+import com.madgag.scalagithub.model._
 import lib.MarkdownParsing
-import org.kohsuke.github.{GHIssueComment, GHPullRequest}
 
-import scala.collection.convert.wrapAll._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object PRMessageIdFinder {
 
-  def messageIdsByMostRecentUsageIn(pr: GHPullRequest): Seq[String] = {
-    val messageIdAndCreationTime = for {
-      comment: GHIssueComment <- pr.listComments()
-      messageId <- MarkdownParsing.parseHiddenLinksOutOf(comment.getBody)
-    } yield messageId -> comment.getCreatedAt.toInstant
+  def messageIdsByMostRecentUsageIn(pr: PullRequest)(implicit g: GitHub): Future[Seq[String]] = {
+    for {
+      comments <- pr.comments2.list().all()
+    } yield {
+      val messageIdAndCreationTime = for {
+        comment <- comments
+        messageId <- MarkdownParsing.parseHiddenLinksOutOf(comment.body)
+      } yield {
+        messageId -> comment.created_at
+      }
 
-    val messageIdsWithMostRecentUsageTime: Map[String, Instant] = messageIdAndCreationTime.groupBy(_._1).mapValues(_.map(_._2).max)
+      implicit def dateTimeOrdering: Ordering[ZonedDateTime] = Ordering.fromLessThan(_ isBefore _)
 
-    messageIdsWithMostRecentUsageTime.toSeq.sortBy(_._2).map(_._1).reverse
+      val messageIdsWithMostRecentUsageTime: Map[String, ZonedDateTime] =
+        messageIdAndCreationTime.groupBy(_._1).mapValues(_.map(_._2).max)
+
+      messageIdsWithMostRecentUsageTime.toSeq.sortBy(_._2).map(_._1).reverse
+    }
   }
 }

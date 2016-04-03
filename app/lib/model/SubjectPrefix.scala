@@ -19,7 +19,7 @@ object SubjectPrefixParsing {
 
   val nonDescriptorTerms = version | patchIndexAndBombSize
 
-  val descriptorWord = word.filter(!nonDescriptorTerms.parse(_).isInstanceOf[Result.Success[_]])
+  val descriptorWord = word.filter(!nonDescriptorTerms.parse(_).isInstanceOf[Parsed.Success[_]])
 
   val descriptor: P[String] = P( descriptorWord.rep(1, sep = " ").! )
 
@@ -31,7 +31,7 @@ object SubjectPrefixParsing {
 
   def parse(subjectLineText: String): Option[SubjectPrefix] = {
     subjectLine.parse(subjectLineText) match {
-      case Result.Success(subjectPrefix, _) => Some(subjectPrefix)
+      case Parsed.Success(subjectPrefix, _) => Some(subjectPrefix)
       case _ => None
     }
   }

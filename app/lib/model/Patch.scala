@@ -17,7 +17,7 @@ object PatchParsing {
 
   val patchFromHeader = P("From " ~ objectId ~ " Mon Sep 17 00:00:00 2001\n")
 
-  val patchHeaderRegion: P[ObjectId] = P(patchFromHeader ~! nonEmptyLine.rep)
+  val patchHeaderRegion: P[ObjectId] = P(patchFromHeader ~/ nonEmptyLine.rep)
 
   val headerKey = P(CharsWhile(_ != ':', min = 1).! ~ ": ")
 
@@ -37,7 +37,7 @@ object PatchParsing {
 
   val patchBodyRegion = P((line ~ !patchFromHeader).rep.!)
 
-  val patch: P[Patch] = P(patchHeaderRegion ~ "\n" ~! patchBodyRegion).map(Patch.tupled)
+  val patch: P[Patch] = P(patchHeaderRegion ~ "\n" ~/ patchBodyRegion).map(Patch.tupled)
 
   val patches: P[Seq[Patch]] = P(patch.rep(sep = "\n"))
 

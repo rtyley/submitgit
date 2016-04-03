@@ -27,14 +27,13 @@ object RedirectCapturer {
     c
   }
 
-  def redirectFor(url: String)(implicit ec: ExecutionContext): Future[Option[Uri]] = for {
-    resp <- okClient.execute(new okhttp.Request.Builder().url(url).build())
-  } yield {
-    resp.code match {
-      case FOUND => Some(Uri.parse(resp.header(LOCATION)))
-      case _ => None
+  def redirectFor(url: String)(implicit ec: ExecutionContext): Future[Option[Uri]] =
+    okClient.execute(new okhttp.Request.Builder().url(url).build()) { resp =>
+      resp.code match {
+        case FOUND => Some(Uri.parse(resp.header(LOCATION)))
+        case _ => None
+      }
     }
-  }
 }
 
 
@@ -64,8 +63,8 @@ trait MessageSummaryByRawResourceFromRedirect extends MailArchive {
         val okClient = new OkHttpClient()
         val rawUrl = rawUrlFor(articleUrl)
         for {
-          resp <- okClient.execute(new Builder().url(rawUrl).build())
-        } yield Some(MessageSummary.fromRawMessage(resp.body.string, articleUrl))
+          raw <- okClient.execute(new Builder().url(rawUrl).build())(_.body.string)
+        } yield Some(MessageSummary.fromRawMessage(raw, articleUrl))
       case None => Future.successful(None)
     }
   }
@@ -133,8 +132,8 @@ case class Marc(groupName: String) extends MailArchive {
       case Some(articleUrl) =>
         val okClient = new OkHttpClient()
         for {
-          resp <- okClient.execute(new okhttp.Request.Builder().url(articleUrl).build())
-        } yield Some(Marc.messageSummaryFor(resp.body.string).copy(groupLink = articleUrl))
+          raw <- okClient.execute(new okhttp.Request.Builder().url(articleUrl).build())(_.body.string)
+        } yield Some(Marc.messageSummaryFor(raw).copy(groupLink = articleUrl))
       case None => Future.successful(None)
     }
   }

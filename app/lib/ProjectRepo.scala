@@ -2,7 +2,7 @@ package lib
 
 import javax.mail.internet.InternetAddress
 
-import com.madgag.github.RepoId
+import com.madgag.scalagithub.model.RepoId
 import lib.model.MessageSummary
 
 import scala.concurrent.{ExecutionContext, Future}
