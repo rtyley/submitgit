@@ -1,6 +1,6 @@
 package lib
 
-import com.madgag.github.GitHubCredentials
+import com.madgag.scalagithub.{GitHub, GitHubCredentials}
 
 import scalax.file.ImplicitConversions._
 import scalax.file.Path
@@ -16,5 +16,5 @@ object Bot {
 
   val ghCreds = GitHubCredentials.forAccessKey(accessToken, workingDir.toPath).get
 
-  def conn() = ghCreds.conn()
+  def conn() = new GitHub(ghCreds)
 }

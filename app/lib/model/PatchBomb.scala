@@ -37,7 +37,7 @@ object PatchBomb {
     val shouldAddFromBodyPrefix =
       author.email == addresses.from.getAddress || author.email.contains("noreply")
 
-    if (shouldAddFromBodyPrefix) None else Some(s"From: ${author.userEmailString}\n")
+    if (shouldAddFromBodyPrefix) None else Some(s"From: ${author.addressString}\n")
   }
 
   def numberFormatFor(size: Int) = {

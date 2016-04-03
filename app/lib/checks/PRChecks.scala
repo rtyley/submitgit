@@ -8,23 +8,23 @@ import lib.actions.Requests._
 import lib.aws.SES._
 import lib.aws.SesAsyncHelpers._
 import org.joda.time.Period
-import org.kohsuke.github.GHIssueState
+import com.madgag.time.Implicits._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object GHChecks extends Checks[GHRequest[_]] {
+object GHChecks extends Checks[GHPRRequest[_]] {
 
-  val EmailVerified = check(_.userEmail.isVerified) or
-    (req => s"Verify your email address (${req.userEmail.getEmail}) with GitHub")
+  val EmailVerified = check(_.user.primaryEmail.verified) or
+    (req => s"Verify your email address (${req.user.primaryEmail.email}) with GitHub")
 
   val UserHasNameSetInProfile = check(_.user.name.exists(_.length > 1)) or
     "Set a Name in your GitHub profile - it'll be used as a display name next to your email"
 
-  def accountIsOlderThan(period: Period) = check(_.user.createdAt < DateTime.now - period) or
+  def accountIsOlderThan(period: Period) = check(_.user.created_at.exists(_.isBefore(DateTime.now - period))) or
     s"To prevent spam, we don't currently allow GitHub accounts less than ${period.pretty} old - get in touch if that's a problem for you!"
 
-  val RegisteredEmailWithSES = checkAsync(req => ses.getIdentityVerificationStatusFor(req.userEmail.getEmail).map(_.contains(VerificationStatus.Success))) or
-    (req => s"Register your email address (${req.userEmail.getEmail}) with submitGit's Amazon SES account in order for it to send emails from you.")
+  val RegisteredEmailWithSES = checkAsync(req => ses.getIdentityVerificationStatusFor(req.user.primaryEmail.email).map(_.contains(VerificationStatus.Success))) or
+    (req => s"Register your email address (${req.user.primaryEmail.email}) with submitGit's Amazon SES account in order for it to send emails from you.")
 
 }
 
@@ -32,9 +32,9 @@ object PRChecks extends Checks[GHPRRequest[_]] {
 
   val MaxCommits = 30
 
-  val UserOwnsPR = check(_.userOwnsPR) or (req => s"This PR was raised by ${req.pr.getUser.atLogin} - you can't submit it for them") // fatal
+  val UserOwnsPR = check(_.userOwnsPR) or (req => s"This PR was raised by ${req.pr.user.atLogin} - you can't submit it for them") // fatal
 
-  val PRIsOpen = check(_.pr.getState == GHIssueState.OPEN) or "Can't submit a closed pull request - reopen it if you're sure"
+  val PRIsOpen = check(_.pr.state == "open") or "Can't submit a closed pull request - reopen it if you're sure"
 
   val HasBeenPreviewed = check(_.hasBeenPreviewed) or (req => s"You need to preview these commits in a test email to yourself before they can be sent for real - click the link at the bottom of the preview email!")
 

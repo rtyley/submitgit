@@ -1,18 +1,18 @@
-@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, mailType: lib.MailType)(implicit req: GHPRRequest[_])
+@(user: User, mailType: lib.MailType)(implicit req: GHPRRequest[_])
 @import lib.MailType
 @main {
     <div class="row">
         <ol class="breadcrumb">
-            @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.id), "repo") { @req.repo.id.fullName }
-            @fragments.linkedBreadcrumb(routes.Application.reviewPullRequest(req.pr.id), "git-pull-request") { #@req.pr.getNumber }
+            @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.repoId), "repo") { @req.repo.full_name }
+            @fragments.linkedBreadcrumb(routes.Application.reviewPullRequest(req.pr.prId), "git-pull-request") { #@req.pr.number }
             <li class="active">@if(mailType==MailType.Preview){preview }email sent</li>
         </ol>
     </div>
     <div class="row">
         <div class="col-md-12">
             <h3>
-                <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-git-pull-request"></span></a>
-                #@pullRequest.getNumber @pullRequest.getTitle
+                <a href="@req.pr.html_url"><span class="mega-octicon octicon-git-pull-request"></span></a>
+                #@req.pr.number @req.pr.title
             </h3>
 
                 <div class="alert alert-success" role="alert">

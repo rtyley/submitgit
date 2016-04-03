@@ -1,6 +1,7 @@
 package controllers
 
 import com.madgag.playgithub.auth.GHRequest
+import lib.AppUser
 import lib.actions.Actions._
 import lib.actions.Requests._
 import lib.aws.SES._
@@ -19,7 +20,10 @@ object EmailRegistration extends Controller {
   }
 
   def registerEmail = GitHubUserWithVerifiedEmail.async { req =>
-    for (res <- ses.sendVerificationEmailTo(req.userEmail.getEmail)) yield Ok("Registration email sent")
+    for {
+      appUser <- AppUser.from(req)
+      res <- ses.sendVerificationEmailTo(appUser.address.getAddress)
+    } yield Ok("Registration email sent")
   }
 
 }

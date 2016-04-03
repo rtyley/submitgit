@@ -20,7 +20,8 @@ object Network {
   val okClient = new OkHttpClient()
   val secureGoogleRequest = new Builder().url("https://www.google.com/").build()
 
-  def isAvailable: Boolean = Try(Await.result(okClient.execute(secureGoogleRequest), 1 second).isSuccessful).getOrElse(false)
+  def isAvailable: Boolean =
+    Try(Await.result(okClient.execute(secureGoogleRequest)(_.isSuccessful), 2 second)).getOrElse(false)
 }
 
 class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatience {

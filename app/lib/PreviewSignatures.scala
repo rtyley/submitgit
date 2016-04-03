@@ -1,8 +1,8 @@
 package lib
 
 import com.madgag.git._
+import com.madgag.scalagithub.model.PullRequest
 import org.eclipse.jgit.lib.ObjectId
-import org.kohsuke.github.GHPullRequest
 import play.api.libs.Crypto
 import play.api.mvc.RequestHeader
 
@@ -12,8 +12,8 @@ object PreviewSignatures {
 
   def signatureFor(headCommit: ObjectId) = Crypto.sign(keyFor(headCommit))
 
-  def hasPreviewed(pr: GHPullRequest)(implicit req: RequestHeader): Boolean = {
-    val headCommit = pr.getHead.getSha.asObjectId
+  def hasPreviewed(pr: PullRequest)(implicit req: RequestHeader): Boolean = {
+    val headCommit = pr.head.sha
     req.session.get(keyFor(headCommit)).exists(sig => Crypto.constantTimeEquals(sig, signatureFor(headCommit)))
   }
 }

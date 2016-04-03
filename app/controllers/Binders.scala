@@ -1,6 +1,6 @@
 package controllers
 
-import com.madgag.github.{PullRequestId, RepoId}
+import com.madgag.scalagithub.model.{PullRequestId, RepoId}
 import lib.MailType
 import org.eclipse.jgit.lib.ObjectId
 import play.api.mvc.PathBindable.Parsing

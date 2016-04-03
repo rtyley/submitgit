@@ -1,10 +1,10 @@
-@(prs: Seq[org.kohsuke.github.GHPullRequest])
+@(prs: Seq[PullRequest])
 
 <div class="list-group">
 @for(pullRequest <- prs) {
-    <a class="list-group-item" href="@routes.Application.reviewPullRequest(pullRequest.id)">
-        <h4><span class="octicon octicon-git-pull-request"></span> <strong>@pullRequest.getTitle</strong></h4>
-        <p class=".small">#@pullRequest.getNumber opened on @pullRequest.getCreatedAt</p>
+    <a class="list-group-item" href="@routes.Application.reviewPullRequest(pullRequest.prId)">
+        <h4><span class="octicon octicon-git-pull-request"></span> <strong>@pullRequest.title</strong></h4>
+        <p class=".small">#@pullRequest.number opened on @pullRequest.created_at</p>
     </a>
 }
 </div>
