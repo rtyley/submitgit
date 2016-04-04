@@ -1,8 +1,11 @@
 @import lib.Email.Addresses
 @import lib.model.MessageSummary
-@import lib.model.PRMessageIdFinder.messageIdsByMostRecentUsageIn
 @import play.api.libs.json.JsString
-@(mailType: lib.MailType, proposedMail: lib.ProposedMail, isDefault: Boolean, btnClass: String
+@(
+        mailType: lib.MailType,
+        proposedMail: lib.ProposedMail,
+        messageIds: Seq[String],
+        isDefault: Boolean, btnClass: String
         )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @import helper._
 @implicitFieldConstructor = @{ b3.vertical.fieldConstructor }
@@ -23,7 +26,7 @@
     @fragments.emailAddresses(proposedMail.addresses)(b3.horizontal.fieldConstructor("col-md-2", "col-md-10"))
     </div>
 
-    @b3.form(routes.Application.mailPullRequest(req.pr.id, mailType)) {
+    @b3.form(routes.Application.mailPullRequest(req.pr.prId, mailType)) {
         @CSRF.formField
 
     @b3.inputWrapped("text", prMailSettings("subjectPrefix"), '_label -> "Subject prefix", 'placeholder -> "PATCH", 'maxlength -> "20") { input =>
@@ -58,13 +61,13 @@
                 datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
                 queryTokenizer: Bloodhound.tokenizers.whitespace,
                 remote: {
-                    url: '@routes.Api.messageLookup(req.repo.id, "QUERY_STRING")',
+                    url: '@routes.Api.messageLookup(req.repo.repoId, "QUERY_STRING")',
                     wildcard: 'QUERY_STRING'
                 }
             });
 
             var messageSuggestionsWithDefaults = function(q, sync, async) {
-              var fallback = @Html(JsString(messageIdsByMostRecentUsageIn(req.pr).headOption.getOrElse("")).toString) ;
+              var fallback = @Html(JsString(messageIds.headOption.getOrElse("")).toString) ;
               messageSuggestions.search( q === '' ? fallback : q, sync, async);
             };
 

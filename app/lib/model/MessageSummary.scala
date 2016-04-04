@@ -3,7 +3,7 @@ package lib.model
 import java.time.{ZoneId, ZonedDateTime}
 import javax.mail.internet.{InternetAddress, MailDateFormat}
 
-import fastparse.core.Result
+import fastparse.core.Parsed
 import lib.Email.Addresses
 import play.api.libs.json._
 import play.api.mvc.Headers
@@ -25,7 +25,7 @@ object MessageSummary {
   }
 
   def fromRawMessage(rawMessage: String, articleUrl: String): MessageSummary = {
-    val Result.Success(headerTuples, _) = PatchParsing.headers.parse(rawMessage)
+    val Parsed.Success(headerTuples, _) = PatchParsing.headers.parse(rawMessage)
     val headers = Headers(headerTuples: _*)
     val messageId = headers("Message-Id").stripPrefix("<").stripSuffix(">")
     val from = new InternetAddress(headers("From"))

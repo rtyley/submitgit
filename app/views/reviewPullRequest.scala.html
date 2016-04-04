@@ -1,10 +1,13 @@
-@(pullRequest: org.kohsuke.github.GHPullRequest, user: org.kohsuke.github.GHMyself, proposedMailByType: Map[lib.MailType,lib.ProposedMail]
+@(
+        commits: Seq[PullRequest.CommitOverview],
+        proposedMailByType: Map[lib.MailType,lib.ProposedMail],
+        messageIds: Seq[String]
         )(implicit req: GHPRRequest[_], prMailSettings: Form[lib.PRMailSettings], messages: Messages)
 @main {
     <div class="row">
         <ol class="breadcrumb">
-            @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.id), "repo") { @req.repo.id.fullName }
-            <li class="active"><span class="octicon octicon-git-pull-request"></span> #@req.pr.getNumber</li>
+            @fragments.linkedBreadcrumb(routes.Application.listPullRequests(req.repo.repoId), "repo") { @req.repo.full_name }
+            <li class="active"><span class="octicon octicon-git-pull-request"></span> #@req.pr.number</li>
         </ol>
         @for(notifyEmailVerification <- req.flash.get("notifyEmailVerification")) {
             <div class="alert alert-info" role="alert">
@@ -18,11 +21,11 @@
     <div class="row">
         <div class="col-md-7">
             <h3>
-                <a href="@pullRequest.getHtmlUrl"><span class="mega-octicon octicon-mark-github"></span></a>
-                #@pullRequest.getNumber @pullRequest.getTitle
+                <a href="@req.pr.html_url"><span class="mega-octicon octicon-mark-github"></span></a>
+                #@req.pr.number @req.pr.title
             </h3>
 
-            @fragments.patchBaseGuidelines(pullRequest.getBase.getRef)
+            @fragments.patchBaseGuidelines(req.pr.base.ref)
 
             <table class="table">
                 <caption>Commits</caption>
@@ -33,19 +36,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @for(commit <- pullRequest.listCommits()) {
+                    @for(commit <- commits) {
                         <tr>
-                            <th scope="row"><code><a href="@commit.getUrl">@commit.getSha.take(8)</a></code></th>
-                            <td><code>@commit.getCommit.getMessage.lines.take(1)</code></td>
+                            <th scope="row"><code><a href="@commit.url">@commit.sha.name.take(8)</a></code></th>
+                            <td><code>@commit.subject</code></td>
                         </tr>
                     }
                 </tbody>
             </table>
-            <pre class="non-wrapping"><code>@for(line <- pullRequest.getBody.lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
+            <pre class="non-wrapping"><code>@for(line <- req.pr.body.getOrElse("").lines; (allowed, excess) = line.splitAt(72)) {@allowed@if(excess.nonEmpty) {<span class="long">@excess</span>}<br/>}</code></pre>
 
         </div>
         <div class="col-md-5">
-            @fragments.sendTabs(req.defaultMailType, proposedMailByType)
+            @fragments.sendTabs(req.defaultMailType, proposedMailByType, messageIds)
         </div>
     </div>
 }

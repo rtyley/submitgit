@@ -1,23 +1,30 @@
 package lib.model
 
+import java.time.ZonedDateTime
 import javax.mail.internet.InternetAddress
 
+import com.madgag.scalagithub.model.CommitIdent
+import com.madgag.scalagithub.model.PullRequest.CommitOverview
 import lib.Email.Addresses
 import org.eclipse.jgit.lib.ObjectId
 import org.scalatestplus.play.PlaySpec
 
 class PatchBombSpec extends PlaySpec {
 
-  val bob = UserIdent("bob", "bob@x.com")
-  val fred = UserIdent("fred", "fred@y.com")
+  val bob = CommitIdent("bob", "bob@x.com", ZonedDateTime.now)
+  val fred = CommitIdent("fred", "fred@y.com", ZonedDateTime.now)
 
-  def patchCommitAuthoredBy(author: UserIdent) =
-    PatchCommit(Patch(ObjectId.zeroId, "PATCHBODY"), Commit(ObjectId.zeroId, author, author, "COMMITMESSAGE"))
+  def patchCommitAuthoredBy(author: CommitIdent) =
+    PatchCommit(Patch(ObjectId.zeroId, "PATCHBODY"),
+      CommitOverview("", ObjectId.zeroId, "", CommitOverview.Commit(
+        "", author, author, "Commit message", 0
+      ))
+    )
 
 
-  def patchBombFrom(user: UserIdent, patchCommit: PatchCommit) = PatchBomb(
+  def patchBombFrom(user: CommitIdent, patchCommit: PatchCommit) = PatchBomb(
     Seq(patchCommit),
-    Addresses(from = new InternetAddress(user.userEmailString)),
+    Addresses(from = new InternetAddress(user.addressString)),
     footer = "FOOTER"
   )
   
@@ -37,7 +44,7 @@ class PatchBombSpec extends PlaySpec {
 
     "not add an in-body 'From' header when the commit author used a 'noreply' address" in {
       // http://article.gmane.org/gmane.comp.version-control.git/286879
-      val mrNoReply = UserIdent("Peter Dave Hello", "peterdavehello@users.noreply.github.com")
+      val mrNoReply = CommitIdent("Peter Dave Hello", "peterdavehello@users.noreply.github.com", ZonedDateTime.now)
       val patchBomb = patchBombFrom(bob, patchCommitAuthoredBy(mrNoReply))
 
       val text = patchBomb.emails.head.bodyText

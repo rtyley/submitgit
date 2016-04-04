@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
-import com.madgag.github.RepoId
+import com.madgag.scalagithub.model.RepoId
 import lib._
 import lib.model.MessageSummary
 import play.api.cache.Cached
@@ -18,7 +18,8 @@ class Api @Inject() (cached: Cached) extends Controller {
 
   val MessageFoundHeader = "X-submitGit-MessageFound"
   
-  val CacheForLongerIfMessageFound = unlift[ResponseHeader, Duration](_.headers.get(MessageFoundHeader).map(_ => 100 days))
+  val CacheForLongerIfMessageFound =
+    unlift[ResponseHeader, Duration](_.headers.get(MessageFoundHeader).map(_ => 100 days))
   
   def messageLookup(repoId: RepoId, query: String) = {
     cached.apply((_ => s"$repoId $query"): (RequestHeader => String), CacheForLongerIfMessageFound).default(3 seconds) {
