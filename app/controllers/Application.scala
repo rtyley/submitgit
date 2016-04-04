@@ -14,6 +14,7 @@ import org.eclipse.jgit.lib.ObjectId
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.Messages.Implicits._
+import play.api.libs.iteratee.Enumeratee
 import play.api.libs.json.Json
 import play.api.libs.json.Json._
 import play.api.mvc._
@@ -31,17 +32,20 @@ object Application extends Controller {
   }
 
   def listPullRequests(repoId: RepoId) = githubRepoAction(repoId).async { implicit req =>
-    implicit val g = req.gitHub
+    implicit val g = req.gitHub // use bot instead?
+
     for {
-      openPRs <- req.repo.pullRequests.list(Map("state"->"open")).all() // req.repo.getPullRequests(GHIssueState.OPEN)
+      openPRs <- req.repo.pullRequests.list(Map("state"->"open")).all()
       closedPRs <- req.repo.pullRequests.list(Map("state"->"closed")).all()
       myself: User <- req.userF
     } yield {
-      val (userPRs, otherPRs) = openPRs.partition(_.user.id.equals(myself.id))
+      req.repo.issues.list(Map("creator"->myself.login)).map(_.flatMap(_.pull_request).map(_.fetch()))
 
-      val alternativePRs = otherPRs ++ closedPRs
+      val (userOpenPRs, otherOpenPRs) = openPRs.partition(_.user.id.equals(myself.id))
 
-      Ok(views.html.listPullRequests(userPRs, alternativePRs.take(3)))
+      val alternativePRs = otherOpenPRs ++ closedPRs
+
+      Ok(views.html.listPullRequests(userOpenPRs, alternativePRs.take(3)))
     }
   }
 

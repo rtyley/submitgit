@@ -38,7 +38,7 @@
                 <tbody>
                     @for(commit <- commits) {
                         <tr>
-                            <th scope="row"><code><a href="@commit.url">@commit.sha.name.take(8)</a></code></th>
+                            <th scope="row"><code><a href="@commit.html_url">@commit.sha.name.take(8)</a></code></th>
                             <td><code>@commit.subject</code></td>
                         </tr>
                     }

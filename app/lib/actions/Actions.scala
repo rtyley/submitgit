@@ -35,7 +35,7 @@ object Actions {
 
   def githubPRAction(prId: PullRequestId) = githubRepoAction(prId.repo) andThen new ActionRefiner[GHRepoRequest, GHPRRequest] {
     override protected def refine[A](request: GHRepoRequest[A]): Future[Either[Result, GHPRRequest[A]]] = {
-      implicit val g = request.gitHub
+      implicit val g = Bot.conn() // get the PR with Bot creds for better caching
       val prF = request.repo.pullRequests.get(prId.num)
       for {
         appUser <- AppUser.from(request)
