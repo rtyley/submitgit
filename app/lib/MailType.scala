@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 sealed trait MailType {
-  def afterSending(pr: PullRequest, patchBomb: PatchBomb, messageId: String, prMailSettings: PRMailSettings)(implicit g: GitHub): PRMailSettings
+  def afterSending(pr: PullRequest, patchBomb: PatchBomb, messageId: String, prMailSettings: PRMailSettings): PRMailSettings
 
   val slug: String
 
@@ -70,7 +70,7 @@ object MailType {
       HasAReasonableNumberOfCommits
     )
 
-    override def afterSending(request: PullRequest, patchBomb: PatchBomb, messageId: String, prMailSettings: PRMailSettings)(implicit g: GitHub) = {
+    override def afterSending(request: PullRequest, patchBomb: PatchBomb, messageId: String, prMailSettings: PRMailSettings) = {
       // Nothing for preview
       prMailSettings
     }
@@ -107,7 +107,7 @@ object MailType {
       HasAReasonableNumberOfCommits
     )
 
-    override def afterSending(pr: PullRequest, patchBomb: PatchBomb, messageId: String, prMailSettings: PRMailSettings)(implicit g: GitHub) = {
+    override def afterSending(pr: PullRequest, patchBomb: PatchBomb, messageId: String, prMailSettings: PRMailSettings) = {
       val mailingListLinks = Project.byRepoId(pr.baseRepo.repoId).mailingList.archives.map(a => s"[${a.providerName}](${a.linkFor(messageId)})").mkString(", ")
 
       val numCommits = patchBomb.patchCommits.size
@@ -116,6 +116,8 @@ object MailType {
       } else {
         s"these $numCommits commits (${pr.compareUrl}) as a set of patches"
       }
+
+      implicit val github = Bot.conn()
 
       pr.comments2.create(CreateComment(
         s"${pr.user.atLogin} sent $patchBombDesc to the mailing list with [_submitGit_](https://github.com/rtyley/submitgit) - " +
