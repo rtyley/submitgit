@@ -77,7 +77,7 @@ case class PublicInbox(groupName: String) extends MailArchive with MessageSummar
 
   def linkFor(messageId: String) = s"https://public-inbox.org/$groupName/$messageId/"
 
-  override def rawUrlFor(articleUrl: Uri) = articleUrl / "raw"
+  override def rawUrlFor(articleUrl: Uri) = articleUrl + "raw"
 }
 
 object Marc {
