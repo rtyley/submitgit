@@ -16,7 +16,7 @@ object Project {
   val Git = Project(
     RepoId("git", "git"),
     MailingList(new InternetAddress("git@vger.kernel.org"), Seq(
-      Gmane.Git,
+      PublicInbox.Git,
       Marc.Git
       // MailArchiveDotCom("git@vger.kernel.org") -- message-id search appears broken
     ))

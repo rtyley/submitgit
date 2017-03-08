@@ -64,19 +64,19 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
       }
     }
   }
-  "Gmane" should {
+  "PublicInbox" should {
     "have a proper link for a message-id" in {
-      Gmane.Git.linkFor("1431830650-111684-1-git-send-email-shawn@churchofgit.com").toString mustEqual
-        "http://mid.gmane.org/1431830650-111684-1-git-send-email-shawn@churchofgit.com"
+      PublicInbox.Git.linkFor("1431830650-111684-1-git-send-email-shawn@churchofgit.com").toString mustEqual
+        "https://public-inbox.org/git/1431830650-111684-1-git-send-email-shawn@churchofgit.com/"
     }
     "give correct raw article url" in {
-      Gmane.Git.rawUrlFor("http://article.gmane.org/gmane.comp.version-control.git/269205").toString mustEqual
-        "http://article.gmane.org/gmane.comp.version-control.git/269205/raw"
+      PublicInbox.Git.rawUrlFor("https://public-inbox.org/git/1431830650-111684-1-git-send-email-shawn@churchofgit.com/").toString mustEqual
+        "https://public-inbox.org/git/1431830650-111684-1-git-send-email-shawn@churchofgit.com/raw"
     }
     "get message data" in {
       assume(Network.isAvailable)
       val messageId = "1431830650-111684-1-git-send-email-shawn@churchofgit.com"
-      whenReady(Gmane.Git.lookupMessage(messageId)) { s =>
+      whenReady(PublicInbox.Git.lookupMessage(messageId)) { s =>
         val messageSummary = s.head
         messageSummary.id mustEqual messageId
         messageSummary.subject mustEqual "[PATCH] daemon: add systemd support"

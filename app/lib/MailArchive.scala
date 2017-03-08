@@ -70,12 +70,12 @@ trait MessageSummaryByRawResourceFromRedirect extends MailArchive {
   }
 }
 
-case class Gmane(groupName: String) extends MailArchive with MessageSummaryByRawResourceFromRedirect {
-  val providerName = "Gmane"
+case class PublicInbox(groupName: String) extends MailArchive with MessageSummaryByRawResourceFromRedirect {
+  val providerName = "public-inbox"
 
-  val url = s"http://dir.gmane.org/gmane.$groupName"
+  val url = s"https://public-inbox.org/$groupName/"
 
-  def linkFor(messageId: String) = s"http://mid.gmane.org/$messageId"
+  def linkFor(messageId: String) = s"https://public-inbox.org/$groupName/$messageId/"
 
   override def rawUrlFor(articleUrl: Uri) = articleUrl / "raw"
 }
@@ -139,8 +139,8 @@ case class Marc(groupName: String) extends MailArchive {
   }
 }
 
-object Gmane {
-  val Git = Gmane("comp.version-control.git")
+object PublicInbox {
+  val Git = PublicInbox("git")
 }
 
 case class MailArchiveDotCom(emailAddress: String) extends MailArchive {
