@@ -12,13 +12,11 @@ import com.netaporter.uri.Uri
 import com.netaporter.uri.config.UriConfig
 import com.netaporter.uri.decoding.NoopDecoder
 import com.netaporter.uri.dsl._
-import com.squareup.okhttp
-import com.squareup.okhttp.OkHttpClient
-import com.squareup.okhttp.Request.Builder
 import controllers.Application._
 import lib.Email.Addresses
 import lib.MailArchive.okClient
 import lib.model.MessageSummary
+import okhttp3.{OkHttpClient, Request}
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
@@ -26,14 +24,10 @@ import scala.collection.convert.wrapAsScala._
 import scala.concurrent.{ExecutionContext, Future}
 
 object RedirectCapturer {
-  val okClient = {
-    val c = new OkHttpClient()
-    c.setFollowRedirects(false)
-    c
-  }
+  val okClient = new OkHttpClient.Builder().followRedirects(false).build()
 
   def redirectFor(url: Uri)(implicit ec: ExecutionContext): OptionT[Future, Uri] =
-    OptionT(okClient.execute(new okhttp.Request.Builder().url(url).build()) { resp =>
+    OptionT(okClient.execute(new Request.Builder().url(url).build()) { resp =>
       resp.code match {
         case FOUND =>
           implicit val c = UriConfig(decoder = NoopDecoder)
@@ -87,7 +81,7 @@ trait OffersRawMessage extends MailArchive {
   def rawUrlFor(canonicalMessageUrl: Uri): Uri
 
   override def messageSummaryBasedOn(canonicalMessageUrl: Uri)(implicit ec: ExecutionContext): Future[MessageSummary] = for {
-    raw <- okClient.execute(new Builder().url(rawUrlFor(canonicalMessageUrl)).build())(_.body.string)
+    raw <- okClient.execute(new Request.Builder().url(rawUrlFor(canonicalMessageUrl)).build())(_.body.string)
   } yield MessageSummary.fromRawMessage(raw, canonicalMessageUrl)
 }
 
@@ -151,7 +145,7 @@ case class Marc(groupName: String) extends MailArchive {
     RedirectCapturer.redirectFor(linkFor(messageId))
 
   override def messageSummaryBasedOn(canonicalMessageUrl: Uri)(implicit ec: ExecutionContext): Future[MessageSummary] = for {
-    raw <- okClient.execute(new okhttp.Request.Builder().url(canonicalMessageUrl).build())(_.body.string)
+    raw <- okClient.execute(new Request.Builder().url(canonicalMessageUrl).build())(_.body.string)
   } yield Marc.messageSummaryFor(raw).copy(groupLink = canonicalMessageUrl)
 }
 

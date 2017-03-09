@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
   cache,
   filters,
   "org.typelevel" %% "cats-core" % "0.9.0",
-  "com.madgag" %% "play-git-hub" % "3.26",
+  "com.madgag" %% "play-git-hub" % "4.0",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.5",
   "com.adrianhurt" %% "play-bootstrap3" % "0.4.4-P24",

@@ -4,8 +4,7 @@ import javax.mail.internet.MailDateFormat
 
 import com.madgag.okhttpscala._
 import com.netaporter.uri.dsl._
-import com.squareup.okhttp.OkHttpClient
-import com.squareup.okhttp.Request.Builder
+import okhttp3.{OkHttpClient, Request}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.play.PlaySpec
 
@@ -18,7 +17,7 @@ object Network {
   import scala.concurrent.duration._
   
   val okClient = new OkHttpClient()
-  val secureGoogleRequest = new Builder().url("https://www.google.com/").build()
+  val secureGoogleRequest = new Request.Builder().url("https://www.google.com/").build()
 
   def isAvailable: Boolean =
     Try(Await.result(okClient.execute(secureGoogleRequest)(_.isSuccessful), 2 second)).getOrElse(false)
