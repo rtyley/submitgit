@@ -31,8 +31,9 @@ object SES {
     new EnvironmentVariableCredentialsProvider()
   )
 
-  val ses: AmazonSimpleEmailServiceAsync = new AmazonSimpleEmailServiceAsyncClient(AwsCredentials).withRegion(EU_WEST_1)
-
-
+  val ses: AmazonSimpleEmailServiceAsync = AmazonSimpleEmailServiceAsyncClient.asyncBuilder
+    .withCredentials(AwsCredentials)
+    .withRegion(EU_WEST_1)
+    .build()
 
 }
