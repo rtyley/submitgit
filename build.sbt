@@ -37,20 +37,20 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "0.9.0",
   "com.madgag" %% "play-git-hub" % "4.0",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
-  "org.webjars" % "bootstrap" % "3.3.5",
-  "com.adrianhurt" %% "play-bootstrap3" % "0.4.4-P24",
-  "org.webjars.bower" % "octicons" % "2.2.3",
-  "org.webjars.bower" % "timeago" % "1.4.1",
+  "org.webjars" % "bootstrap" % "3.3.7",
+  "com.adrianhurt" %% "play-bootstrap3" % "0.4.5-P24",
+  "org.webjars.bower" % "octicons" % "4.3.0",
+  "org.webjars.bower" % "timeago" % "1.5.3",
   "org.webjars.bower" % "typeahead.js" % "0.11.1",
   "org.webjars.bower" % "typeahead.js-bootstrap3.less" % "0.2.3",
-  "org.webjars.npm" % "handlebars" % "3.0.3",
-  "org.jsoup" % "jsoup" % "1.8.2",
-  "com.github.nscala-time" %% "nscala-time" % "2.0.0",
+  "org.webjars.npm" % "handlebars" % "4.0.6",
+  "org.jsoup" % "jsoup" % "1.10.2",
+  "com.github.nscala-time" %% "nscala-time" % "2.16.0",
   "com.netaporter" %% "scala-uri" % "0.4.16",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
-  "org.scalatestplus" %% "play" % "1.4.0-M4" % "test",
+  "org.scalatestplus" %% "play" % "1.4.0" % "test",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.11.102",
-  "com.sun.mail" % "javax.mail" % "1.5.3"
+  "com.sun.mail" % "javax.mail" % "1.5.6"
 )
 
 sources in (Compile,doc) := Seq.empty
