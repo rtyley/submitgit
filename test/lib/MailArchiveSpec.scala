@@ -25,14 +25,17 @@ object Network {
 }
 
 class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatience {
+
   "Google Groups" should {
     val submitGitGoogleGroup = GoogleGroup("submitgit-test")
+
+    val ExampleMessageId = "0000014d9a92ef17-abf8da02-8ed6-4f1e-b959-db3d4617e750-000000@eu-west-1.amazonses.com"
 
     "have a proper link for a message-id" in {
       GoogleGroup("foo").linkFor("bar@baz.com").toString mustEqual
         "https://groups.google.com/d/msgid/foo/bar@baz.com"
 
-      submitGitGoogleGroup.linkFor("0000014d9a92ef17-abf8da02-8ed6-4f1e-b959-db3d4617e750-000000@eu-west-1.amazonses.com").toString mustEqual
+      submitGitGoogleGroup.linkFor(ExampleMessageId).toString mustEqual
         "https://groups.google.com/d/msgid/submitgit-test/0000014d9a92ef17-abf8da02-8ed6-4f1e-b959-db3d4617e750-000000@eu-west-1.amazonses.com"
     }
     "link to google group" in {
@@ -45,13 +48,18 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
       submitGitGoogleGroup.rawUrlFor("/forum/#!msg/submitgit-test/-cq4q1w7jyY/A-EH61BAZaUJ").toString mustEqual
         "https://groups.google.com/forum/message/raw?msg=submitgit-test/-cq4q1w7jyY/A-EH61BAZaUJ"
     }
+    "get canonical url for message" in {
+      assume(Network.isAvailable)
+      whenReady(submitGitGoogleGroup.canonicalUrlFor(ExampleMessageId).value) {
+        _.value.toString mustEqual "https://groups.google.com/forum/#!msg/submitgit-test/E3FadZAKXU0/7htJeneMBP8J"
+      }
+    }
     "get message data" in {
       assume(Network.isAvailable)
-      val messageId = "349d78e1-3c4f-4415-908d-599a57d15008@googlegroups.com"
-      whenReady(submitGitGoogleGroup.lookupMessage(messageId)) { s =>
+      whenReady(submitGitGoogleGroup.lookupMessage(ExampleMessageId)) { s =>
         val messageSummary = s.head
-        messageSummary.id mustEqual messageId
-        messageSummary.subject mustEqual "Chalk"
+        messageSummary.id mustEqual ExampleMessageId
+        messageSummary.subject mustEqual "[PATCH] Update gc.c"
       }
     }
     "get '[PATCH/RFC v245] Update gc.c' message data posted by submitGit using AWS SES" in {
@@ -65,9 +73,17 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
     }
   }
   "PublicInbox" should {
+
+    val ChurchOfGitMessageId = "1431830650-111684-1-git-send-email-shawn@churchofgit.com"
+
     "have a proper link for a message-id" in {
-      PublicInbox.Git.linkFor("1431830650-111684-1-git-send-email-shawn@churchofgit.com").toString mustEqual
+      PublicInbox.Git.linkFor(ChurchOfGitMessageId).toString mustEqual
         "https://public-inbox.org/git/1431830650-111684-1-git-send-email-shawn@churchofgit.com/"
+    }
+    "give correct canonical url for message" in {
+      whenReady(PublicInbox.Git.canonicalUrlFor(ChurchOfGitMessageId).value) {
+        _.value.toString mustEqual "https://public-inbox.org/git/1431830650-111684-1-git-send-email-shawn@churchofgit.com/"
+      }
     }
     "give correct raw article url" in {
       PublicInbox.Git.rawUrlFor("https://public-inbox.org/git/1431830650-111684-1-git-send-email-shawn@churchofgit.com/").toString mustEqual
@@ -75,14 +91,14 @@ class MailArchiveSpec extends PlaySpec with ScalaFutures with IntegrationPatienc
     }
     "get message data" in {
       assume(Network.isAvailable)
-      val messageId = "1431830650-111684-1-git-send-email-shawn@churchofgit.com"
-      whenReady(PublicInbox.Git.lookupMessage(messageId)) { s =>
+      whenReady(PublicInbox.Git.lookupMessage(ChurchOfGitMessageId)) { s =>
         val messageSummary = s.head
-        messageSummary.id mustEqual messageId
+        messageSummary.id mustEqual ChurchOfGitMessageId
         messageSummary.subject mustEqual "[PATCH] daemon: add systemd support"
       }
     }
   }
+
   "MARC" should {
     "deobfuscate this crazy stuff" in {
       Marc.deobfuscate("Roberto Tyley &lt;roberto.tyley () gmail ! com&gt;") mustEqual

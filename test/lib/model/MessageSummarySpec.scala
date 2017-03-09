@@ -8,6 +8,7 @@ class MessageSummarySpec extends PlaySpec {
 
   val awsSesPost = Resource.fromClasspath("samples/raw.posts/raw.posted-by-aws-ses.txt").string
   val googleGroupsPost = Resource.fromClasspath("samples/raw.posts/raw.posted-by-google-groups.txt").string
+  val publicInbox = Resource.fromClasspath("samples/raw.posts/raw.public-inbox.txt").string
 
   "Message summary from raw" should {
     "parse a message posted by AWS SES" in {
@@ -20,5 +21,9 @@ class MessageSummarySpec extends PlaySpec {
       messageSummary.subject mustEqual "Scary fudge"
     }
 
+    "parse a message stored on public-inbox.org" in {
+      val messageSummary = MessageSummary.fromRawMessage(publicInbox, "")
+      messageSummary.subject mustEqual "[PATCH] daemon: add systemd support"
+    }
   }
 }

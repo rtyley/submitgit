@@ -34,6 +34,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   cache,
   filters,
+  "org.typelevel" %% "cats-core" % "0.9.0",
   "com.madgag" %% "play-git-hub" % "3.26",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.5",
@@ -45,7 +46,7 @@ libraryDependencies ++= Seq(
   "org.webjars.npm" % "handlebars" % "3.0.3",
   "org.jsoup" % "jsoup" % "1.8.2",
   "com.github.nscala-time" %% "nscala-time" % "2.0.0",
-  "com.netaporter" %% "scala-uri" % "0.4.7",
+  "com.netaporter" %% "scala-uri" % "0.4.16",
   "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1",
   "org.scalatestplus" %% "play" % "1.4.0-M4" % "test",
   "com.amazonaws" % "aws-java-sdk-ses" % "1.10.7",

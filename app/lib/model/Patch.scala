@@ -35,6 +35,15 @@ object PatchParsing {
 
   val headers: P[Seq[(String, String)]] = P(header.rep(sep = newline))
 
+  val nonHeaderLines = (!header ~ line).rep(sep = newline)
+
+  /* For some reason the 'raw' messages at public-inbox.org have an initial line which isn't a standard
+   * message header - eg: "From mboxrd@z Thu Jan  1 00:00:00 1970" does not have a colon (':')
+   *
+   * https://public-inbox.org/git/6a72bfd4-5032-5e40-5c6d-8b77ca5ae775@gmail.com/raw
+   */
+  val messageHeaders: P[Seq[(String, String)]] = nonHeaderLines ~ headers
+
   val patchBodyRegion = P((line ~ !patchFromHeader).rep.!)
 
   val patch: P[Patch] = P(patchHeaderRegion ~ "\n" ~/ patchBodyRegion).map(Patch.tupled)

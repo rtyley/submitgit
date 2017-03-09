@@ -18,7 +18,6 @@ object Project {
     MailingList(new InternetAddress("git@vger.kernel.org"), Seq(
       PublicInbox.Git,
       Marc.Git
-      // MailArchiveDotCom("git@vger.kernel.org") -- message-id search appears broken
     ))
   )
   val PretendGit = Project(

@@ -25,7 +25,7 @@ object MessageSummary {
   }
 
   def fromRawMessage(rawMessage: String, articleUrl: String): MessageSummary = {
-    val Parsed.Success(headerTuples, _) = PatchParsing.headers.parse(rawMessage)
+    val Parsed.Success(headerTuples, _) = PatchParsing.messageHeaders.parse(rawMessage)
     val headers = Headers(headerTuples: _*)
     val messageId = headers("Message-Id").stripPrefix("<").stripSuffix(">")
     val from = new InternetAddress(headers("From"))
