@@ -2,7 +2,7 @@ name := "submitgit"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.11.11"
 
 updateOptions := updateOptions.value.withCachedResolution(true)
 
@@ -35,7 +35,7 @@ libraryDependencies ++= Seq(
   cache,
   filters,
   "org.typelevel" %% "cats-core" % "0.9.0",
-  "com.madgag" %% "play-git-hub" % "4.0",
+  "com.madgag" %% "play-git-hub" % "4.3",
   "com.typesafe.akka" %% "akka-agent" % "2.3.2",
   "org.webjars" % "bootstrap" % "3.3.7",
   "com.adrianhurt" %% "play-bootstrap3" % "0.4.5-P24",
